@@ -4,6 +4,7 @@ import './index.css';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import SignUp from './pages/SignUp';
+import StaffHome from './pages/StaffHome';
 
 const routes = (
   <Router>
@@ -11,6 +12,7 @@ const routes = (
       <Route path='/login' exact element={<Login />}/>
       <Route path='/' exact element={<Home />}/>
       <Route path='/sign-up' exact element={<SignUp />}/>
+      <Route path='/StaffHome' exact element={<StaffHome />}/>
     </Routes>
   </Router>
 );

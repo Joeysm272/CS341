@@ -1,14 +1,10 @@
 import React from 'react'
 import Navbar from '../components/navbar'
 
-const Home = () => {
+const StaffHome = () => {
   return (
     <div>
-
       <Navbar />
-      <h1 class='test' >
-        text
-      </h1>
       HTML goes here 
       CSS file is /src/index.css
         
@@ -16,4 +12,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default StaffHome
