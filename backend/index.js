@@ -12,10 +12,13 @@ app.use(express.json());
 //     res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
 //   });
 
-app.use(cors({origin:"*"}));
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.json({message: "hello"});
+})
+
+app.post('/login', (req, res) => {
 })
 
 
