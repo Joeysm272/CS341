@@ -1,10 +1,13 @@
 import React from 'react'
+import Navbar from '../components/navbar'
 
 const Home = () => {
   return (
     <div>
-        HTML goes here 
-        CSS file is /src/index.css
+      <Navbar />
+      HTML goes here 
+      CSS file is /src/index.css
+        
     </div>
   )
 }
