@@ -5,8 +5,7 @@ const StaffHome = () => {
   return (
     <div>
       <Navbar />
-      HTML goes here 
-      CSS file is /src/index.css
+      
         
     </div>
   )
