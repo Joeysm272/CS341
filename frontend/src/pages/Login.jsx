@@ -49,7 +49,6 @@ const Login = () => {
               value={username} 
               onChange={(e) => setUsername(e.target.value)}/>
 
-
               <input className=' w-full text-sm bg-transparent border-[1.5px] px-5 py-3 rounded mb-4 outline-none' 
               type="password" 
               placeholder='password' 
@@ -62,10 +61,7 @@ const Login = () => {
             </form>
             <p className='text-sm text-center mt-4'>Don't have an account? <Link to='/sign-up' className='font-medium text-blue-400 underline'>Sign Up</Link></p>
           </div>
-        </div>
-
-
-        
+        </div>  
     </div>
   )
 }
