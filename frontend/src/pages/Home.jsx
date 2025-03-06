@@ -1,7 +1,12 @@
-import React from 'react'
-import Navbar from '../components/navbar'
-
-const Home = () => {
+import React from 'react';
+import Navbar from '../components/navbar';
+import membershipImage from '../images/membership.jpg.webp';
+import programsImage from '../images/programs.webp';
+import fitnessClass from '../images/fitnessclass.webp';
+import kidsGroup from '../images/kids.webp';
+import stretch from '../images/stretching.webp';
+import { useNavigate } from 'react-router-dom';
+import '../index.css';
 
 //   const createProgram = async () => {
 //     fetch('http://localhost:8000/programs', {
@@ -27,14 +32,16 @@ const Home = () => {
 // }
         // <button className='bg-black text-white cursor-pointer' onClick={createProgram}>Create Program</button>
         // <button className='bg-black text-white cursor-pointer' onClick={deleteProgram}>Delete Program</button>
+
+const Home = () => {
   return (
     <div>
       <Navbar />
       HTML goes here 
       CSS file is /src/index.css
-
+        
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
