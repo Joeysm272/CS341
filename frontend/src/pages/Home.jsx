@@ -34,6 +34,16 @@ import '../index.css';
         // <button className='bg-black text-white cursor-pointer' onClick={deleteProgram}>Delete Program</button>
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  const goToMemberships = () => {
+    navigate('/Membership')
+  };
+
+  const goToPrograms = () => {
+    navigate('/Programs')
+  };
+  
     return (
     <div>
       <Navbar />
