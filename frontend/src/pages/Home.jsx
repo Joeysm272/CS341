@@ -34,12 +34,36 @@ import '../index.css';
         // <button className='bg-black text-white cursor-pointer' onClick={deleteProgram}>Delete Program</button>
 
 const Home = () => {
-  return (
+    return (
     <div>
       <Navbar />
-      HTML goes here 
-      CSS file is /src/index.css
-        
+      <div class="banner" role="region" aria-label="Banner">
+        <div class='banner-header'>
+          <div class='YMCA'>YMCA</div>
+          <div class="banner-text">
+            <p1>A place for all to belong.</p1>
+            <br></br>
+            <p2>Discover how we can help you be your best self.</p2>
+          </div>
+        </div>
+        <div class="banner-images">
+          <img src={fitnessClass} alt="Banner Image 1" class="banner-image" />
+          <img src={kidsGroup} alt="Banner Image 2" class="banner-image" />
+          <img src={stretch} alt="Banner Image 3" class="banner-image" />
+        </div>
+      </div>
+
+      <div class = "home-container">
+        <button class="home-button" onClick={goToMemberships}>
+          <img src={membershipImage} alt="Membership Image" />
+          <span class="home-label">Membership</span>
+        </button>
+
+        <button class="home-button" onClick={goToPrograms}>
+          <img src={programsImage} alt="Programs Image" />
+          <span class="home-label">Programs</span>
+        </button>
+      </div>
     </div>
   );
 };
