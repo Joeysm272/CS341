@@ -43,7 +43,7 @@ const Home = () => {
   const goToPrograms = () => {
     navigate('/Programs')
   };
-  
+
     return (
     <div>
       <Navbar />
@@ -51,9 +51,9 @@ const Home = () => {
         <div class='banner-header'>
           <div class='YMCA'>YMCA</div>
           <div class="banner-text">
-            <p1>A place for all to belong.</p1>
+            <h1>A place for all to belong.</h1>
             <br></br>
-            <p2>Discover how we can help you be your best self.</p2>
+            <h2>Discover how we can help you be your best self.</h2>
           </div>
         </div>
         <div class="banner-images">
