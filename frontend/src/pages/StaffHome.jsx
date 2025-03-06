@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/navbar'
 
 const StaffHome = () => {
   const [classes, setClasses] = useState([]);
   const [formData, setFormData] = useState({
-    name: '',
+    programName: '',
     type: '',
     instructor: '',
     time: '',
     location: '',
-    maxParticipants: '',
-    description: '',
+    capacity: '',
+    price: '',
+    desc: '',
     enrolled: 0, // Track enrollments
   });
 
@@ -39,13 +40,14 @@ const StaffHome = () => {
 
     // Reset form
     setFormData({
-      name: '',
+      programName: '',
       type: '',
       instructor: '',
       time: '',
       location: '',
-      maxParticipants: '',
-      description: '',
+      capacity: '',
+      price: '',
+      desc: '',
       enrolled: 0,
     });
   };
@@ -71,6 +73,43 @@ const StaffHome = () => {
     }
   };
 
+  const createProgram = async () => {
+    fetch('http://localhost:8000/programs', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json" // Telling the server we’re sending JSON
+      },
+      body: JSON.stringify({
+        programName: formData.programName,
+        type: formData.type,
+        instructor: formData.instructor,
+        time: formData.time,
+        location: formData.location,
+        capacity: formData.capacity,
+        price: formData.price,
+        desc: formData.desc,
+        enrolled: 0,
+      })
+    })
+  }
+
+  const deleteProgram = async (id) => {
+    fetch(`http://localhost:8000/programs/${id}`, {
+      method: "DELETE"
+    })
+  }
+
+
+  useEffect(() => {
+    const getPrograms = async () => {
+      const res = await fetch('http://localhost:8000/programs');
+      const data = await res.json();
+      setClasses(data);
+    }
+
+    getPrograms();
+  }, []);
+
   return (
     <div className="bg-gray-100">
       <Navbar />
@@ -84,9 +123,9 @@ const StaffHome = () => {
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
             <input
               type="text"
-              name="name"
+              name="programName"
               placeholder="Class Name"
-              value={formData.name}
+              value={formData.programName}
               onChange={handleChange}
               className="border p-2 rounded"
               required
@@ -127,21 +166,30 @@ const StaffHome = () => {
             />
             <input
               type="number"
-              name="maxParticipants"
-              placeholder="Max Participants"
-              value={formData.maxParticipants}
+              name="capacity"
+              placeholder="Capacity"
+              value={formData.capacity}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
+            />
+            <input
+              type="number"
+              name="price"
+              placeholder="Price"
+              value={formData.price}
               onChange={handleChange}
               className="border p-2 rounded"
               required
             />
             <textarea
-              name="description"
+              name="desc"
               placeholder="Class Description"
-              value={formData.description}
+              value={formData.desc}
               onChange={handleChange}
               className="border p-2 rounded"
             ></textarea>
-            <button type="submit" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-blue-600">
+            <button type="submit" onClick={createProgram} className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-blue-600">
               {editIndex !== null ? 'Update Class' : 'Create Class'}
             </button>
           </form>
@@ -156,16 +204,17 @@ const StaffHome = () => {
             <ul className="space-y-4">
               {classes.map((cls, index) => (
                 <li key={index} className="p-4 border rounded-lg shadow-sm bg-gray-50">
-                  <h3 className="text-lg font-semibold">{cls.name} ({cls.type})</h3>
+                  <h3 className="text-lg font-semibold">{cls.programName} ({cls.type})</h3>
                   <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
                   <p className="text-sm text-gray-600">Time: {new Date(cls.time).toLocaleString()}</p>
                   <p className="text-sm text-gray-600">Location: {cls.location}</p>
-                  <p className="text-sm text-gray-600">Max Participants: {cls.maxParticipants}</p>
-                  <p className="text-sm text-gray-700 mt-2">{cls.description}</p>
+                  <p className="text-sm text-gray-600">Capacity: {cls.capacity}</p>
+                  <p className="text-sm text-gray-600">Price: ${cls.price}</p>
+                  <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
 
                   {/* Enrollment Counter */}
                   <p className="text-sm font-bold text-green-600">
-                    Enrolled: {cls.enrolled} / {cls.maxParticipants}
+                    Enrolled: {cls.enrolled} / {cls.capacity}
                   </p>
 
                   <div className="flex space-x-2 mt-3">
@@ -176,7 +225,7 @@ const StaffHome = () => {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(index)}
+                      onClick={() => {deleteProgram(classes[index]._id), handleDelete(index)}}
                       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                     >
                       Delete

@@ -24,13 +24,26 @@ app.get('/', (req, res) => {
     res.json({message: "hello"});
 })
 
+app.get('/programs', async (req, res) => {
+    const programs = await Program.find();
+    return res.json(programs);
+})
+
 app.post('/programs', async (req, res) => {
-    const {programName, time, location, capacity, price, desc} = req.body;
+    const {programName, type, instructor, time, location, capacity, price, desc, enrolled} = req.body;
 
     const program = new Program({
-        programName, time, location, capacity, price, desc
+        programName, type, instructor, time, location, capacity, price, desc, enrolled
     })
     await program.save();
+    res.json(program);
+})
+
+app.put('/programs/:id/enrollment', async (req, res) => {
+    const programId = req.params.id;
+
+    const program = await Program.findByIdAndUpdate(programId, {$inc: {enrolled: 1}}, {new: true});
+    if (!program) return res.status(404).json({ message: 'Course not found' });
     res.json(program);
 })
 
@@ -47,6 +60,8 @@ app.delete('/programs/:id', async (req, res) => {
 
     return res.json({message: 'deleted successfully'})
 })
+
+
 
 
 app.listen(8000);

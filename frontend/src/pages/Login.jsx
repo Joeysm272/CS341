@@ -30,7 +30,13 @@ const Login = () => {
     }
     setError('');
 
-    navigate('/home');
+    if(username === 'staff'){
+      navigate('/staffHome');
+      return;
+    }
+
+    navigate('/');
+
   }
 
   return (
