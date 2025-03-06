@@ -8,7 +8,8 @@ const programSchema = new Schema({
     time: {type: String},
     location: {type: String},
     capacity: {type: Number},
-    price: {type: Number},
+    memberPrice: {type: Number},
+    nonMemberPrice: {type: Number},
     desc: {type: String},
     enrolled: {type: Number}
 });

@@ -10,7 +10,8 @@ const StaffHome = () => {
     time: '',
     location: '',
     capacity: '',
-    price: '',
+    memberPrice: '',
+    nonMemberPrice: '',
     desc: '',
     enrolled: 0, // Track enrollments
   });
@@ -46,7 +47,8 @@ const StaffHome = () => {
       time: '',
       location: '',
       capacity: '',
-      price: '',
+      memberPrice: '',
+      nonMemberPrice: '',
       desc: '',
       enrolled: 0,
     });
@@ -86,7 +88,8 @@ const StaffHome = () => {
         time: formData.time,
         location: formData.location,
         capacity: formData.capacity,
-        price: formData.price,
+        memberPrice: formData.memberPrice,
+        nonMemberPrice: formData.nonMemberPrice,
         desc: formData.desc,
         enrolled: 0,
       })
@@ -175,9 +178,18 @@ const StaffHome = () => {
             />
             <input
               type="number"
-              name="price"
-              placeholder="Price"
-              value={formData.price}
+              name="memberPrice"
+              placeholder="Memeber Price"
+              value={formData.memberPrice}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
+            />
+            <input
+              type="number"
+              name="nonMemberPrice"
+              placeholder="Non-Memeber Price"
+              value={formData.nonMemberPrice}
               onChange={handleChange}
               className="border p-2 rounded"
               required
@@ -209,7 +221,8 @@ const StaffHome = () => {
                   <p className="text-sm text-gray-600">Time: {new Date(cls.time).toLocaleString()}</p>
                   <p className="text-sm text-gray-600">Location: {cls.location}</p>
                   <p className="text-sm text-gray-600">Capacity: {cls.capacity}</p>
-                  <p className="text-sm text-gray-600">Price: ${cls.price}</p>
+                  <p className="text-sm text-gray-600">Member Price: ${cls.memberPrice}</p>
+                  <p className="text-sm text-gray-600">Non-Member Price: ${cls.nonMemberPrice}</p>
                   <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
 
                   {/* Enrollment Counter */}

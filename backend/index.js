@@ -30,10 +30,10 @@ app.get('/programs', async (req, res) => {
 })
 
 app.post('/programs', async (req, res) => {
-    const {programName, type, instructor, time, location, capacity, price, desc, enrolled} = req.body;
+    const {programName, type, instructor, time, location, capacity, memberPrice, nonMemberPrice, desc, enrolled} = req.body;
 
     const program = new Program({
-        programName, type, instructor, time, location, capacity, price, desc, enrolled
+        programName, type, instructor, time, location, capacity, memberPrice, nonMemberPrice, desc, enrolled
     })
     await program.save();
     res.json(program);

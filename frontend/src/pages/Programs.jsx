@@ -45,7 +45,8 @@ const Programs = () => {
                   <p className="text-sm text-gray-600">Time: {new Date(cls.time).toLocaleString()}</p>
                   <p className="text-sm text-gray-600">Location: {cls.location}</p>
                   <p className="text-sm text-gray-600">Capacity: {cls.capacity}</p>
-                  <p className="text-sm text-gray-600">Price: ${cls.price}</p>
+                  <p className="text-sm text-gray-600">Member Price: ${cls.memberPrice}</p>
+                  <p className="text-sm text-gray-600">Non-Member Price: ${cls.nonMemberPrice}</p>
                   <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
 
                   {/* Enrollment Counter */}
