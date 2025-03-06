@@ -72,7 +72,7 @@ const StaffHome = () => {
   };
 
   return (
-    <div>
+    <div className="bg-gray-100">
       <Navbar />
       <div>
         <header className="bg-teal-600 text-white p-4 text-center text-2xl font-bold">
