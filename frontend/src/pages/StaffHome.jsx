@@ -155,6 +155,7 @@ const StaffHome = () => {
               name="time"
               value={formData.time}
               onChange={handleChange}
+              min={new Date().toISOString().slice(0, 16)} // Prevent past date/time
               className="border p-2 rounded"
               required
             />
