@@ -88,7 +88,7 @@ const StaffHome = () => {
         type: formData.type,
         instructor: formData.instructor,
         startDate: formData.startDate,
-        startDate: formData.endDate,
+        endDate: formData.endDate,
         location: formData.location,
         capacity: formData.capacity,
         memberPrice: formData.memberPrice,
