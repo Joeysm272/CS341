@@ -52,7 +52,7 @@ const Programs = () => {
                   <h3 className="text-lg font-semibold">{cls.programName} ({cls.type})</h3>
                   <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
                   <p className="text-sm text-gray-600">
-                    Start Date:{" "}
+                    First Class:{" "}
                     {new Date(cls.startDate).toLocaleString("en-US", {
                       year: "numeric",
                       month: "2-digit",
@@ -62,7 +62,7 @@ const Programs = () => {
                     })}
                   </p>
                   <p className="text-sm text-gray-600">
-                    End Date:{" "}
+                    Last Class:{" "}
                     {new Date(cls.endDate).toLocaleString("en-US", {
                       year: "numeric",
                       month: "2-digit",
