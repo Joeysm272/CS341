@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from '../components/navbar';
+import Navbar from '../components/Navbar';
 import membershipImage from '../images/membership.jpg.webp';
 import programsImage from '../images/programs.webp';
 import fitnessClass from '../images/fitnessclass.webp';

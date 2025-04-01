@@ -4,6 +4,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const config = require('./config.json');
 const Program = require('./models/program.model');
+const User = require('./models/users.model');
 
 const app = express();
 
@@ -61,7 +62,20 @@ app.delete('/programs/:id', async (req, res) => {
     return res.json({message: 'deleted successfully'})
 })
 
+app.post('/sign-up', async (req, res) => {
+    const {username, password, firstName, lastName, email, phone} = req.body;
 
+    if(!username || !password){
+        return res.json({message: 'No user'})
+    }
+
+    const user = new User({
+        username, password, firstName, lastName, email, phone
+    })
+    await user.save();
+    res.json(user);
+
+})
 
 
 app.listen(8000);

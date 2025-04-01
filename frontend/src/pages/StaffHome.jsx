@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/navbar'
+import Navbar from '../components/Navbar'
 
 const StaffHome = () => {
   const [classes, setClasses] = useState([]);
