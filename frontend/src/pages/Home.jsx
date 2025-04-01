@@ -66,7 +66,7 @@ const Home = () => {
       <div class = "home-container">
         <button class="home-button" onClick={goToMemberships}>
           <img src={membershipImage} alt="Membership Image" />
-          <span class="home-label">Membership</span>
+          <span class="home-label">Account</span>
         </button>
 
         <button class="home-button" onClick={goToPrograms}>
