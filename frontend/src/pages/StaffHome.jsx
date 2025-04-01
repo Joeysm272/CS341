@@ -7,7 +7,8 @@ const StaffHome = () => {
     programName: '',
     type: '',
     instructor: '',
-    time: '',
+    startDate: '',
+    endDate: '',
     location: '',
     capacity: '',
     memberPrice: '',
@@ -44,7 +45,8 @@ const StaffHome = () => {
       programName: '',
       type: '',
       instructor: '',
-      time: '',
+      startDate: '',
+      endDate: '',
       location: '',
       capacity: '',
       memberPrice: '',
@@ -85,7 +87,8 @@ const StaffHome = () => {
         programName: formData.programName,
         type: formData.type,
         instructor: formData.instructor,
-        time: formData.time,
+        startDate: formData.startDate,
+        startDate: formData.endDate,
         location: formData.location,
         capacity: formData.capacity,
         memberPrice: formData.memberPrice,
@@ -137,7 +140,7 @@ const StaffHome = () => {
               <option value="">Select Class Type</option>
               <option value="Yoga">Yoga</option>
               <option value="Swimming">Swimming</option>
-              <option value="HIIT">HIIT</option>
+              <option value="Log Rolling">Log Rolling</option>
               <option value="Strength Training">Strength Training</option>
               <option value="Zumba">Zumba</option>
             </select>
@@ -150,15 +153,32 @@ const StaffHome = () => {
               className="border p-2 rounded"
               required
             />
-            <input
-              type="datetime-local"
-              name="time"
-              value={formData.time}
-              onChange={handleChange}
-              min={new Date().toISOString().slice(0, 16)} // Prevent past date/time
-              className="border p-2 rounded"
-              required
-            />
+            <div>
+              <label htmlFor="startDate" style={{ marginRight: '8px'}}>Start Date:</label>
+              <input
+                id="startDate"
+                type="datetime-local"
+                name="startDate"
+                value={formData.startDate}
+                onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                min={new Date().toISOString().slice(0, 16)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="endDate" style={{ marginRight: '15px'}}>End Date:</label>
+              <input
+                id="endDate"
+                type="datetime-local"
+                name="endDate"
+                value={formData.endDate}
+                onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                // Set the minimum allowed end date to the chosen start date.
+                min={formData.startDate || new Date().toISOString().slice(0, 16)}
+                required
+              />
+            </div>
+
             <input
               type="text"
               name="location"
@@ -219,7 +239,26 @@ const StaffHome = () => {
                 <li key={index} className="p-4 border rounded-lg shadow-sm bg-gray-50">
                   <h3 className="text-lg font-semibold">{cls.programName} ({cls.type})</h3>
                   <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
-                  <p className="text-sm text-gray-600">Time: {new Date(cls.time).toLocaleString()}</p>
+                  <p className="text-sm text-gray-600">
+                    Start Date:{" "}
+                    {new Date(cls.startDate).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    End Date:{" "}
+                    {new Date(cls.endDate).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
                   <p className="text-sm text-gray-600">Location: {cls.location}</p>
                   <p className="text-sm text-gray-600">Capacity: {cls.capacity}</p>
                   <p className="text-sm text-gray-600">Member Price: ${cls.memberPrice}</p>
