@@ -15,6 +15,38 @@ const SignUp = () => {
   const navigate = useNavigate();
 
   const userSignUp = async () => {
+    setError('');
+
+    if(!username){
+      setError('Please enter username');
+      return;
+    }
+
+    if(!password){
+      setError('Please enter password');
+      return;
+    }
+
+    if(!firstName){
+      setError('Please enter first name');
+      return;
+    }
+
+    if(!lastName){
+      setError('Please enter last name');
+      return;
+    }
+
+    if(!email){
+      setError('Please enter email');
+      return;
+    }
+
+    if(!phone){
+      setError('Please enter phone');
+      return;
+    }
+
     const response = await fetch('http://localhost:8000/sign-up', {
       method: "POST",
       headers: {
@@ -29,20 +61,20 @@ const SignUp = () => {
         phone: phone
       })
     });
+
     const data = await response.json();
-    console.log(data);
+    if(data){
+      if(username === 'staff'){
+        navigate('/staffHome');
+        return;
+      }
+      navigate('/');
+    }
   }
 
   function handleSignUp(e) {
     e.preventDefault();
-    console.log(firstName)
-    console.log(lastName)
-    console.log(phone)
-    console.log(email)
-    console.log(username)
-    console.log(password)
     userSignUp();
-    // navigate('/');
   }
 
   return (

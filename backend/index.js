@@ -77,6 +77,19 @@ app.post('/sign-up', async (req, res) => {
 
 })
 
+app.post('/login', async (req, res) => {
+    const {username, password} = req.body;
+
+    const user = await User.findOne({username: username});
+    
+    if(!user || user.password !== password){
+        return res.status(400).json(null);
+    }
+    
+    return res.json(user).status(200)
+
+})
+
 
 app.listen(8000);
 

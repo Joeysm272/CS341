@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {findUser} from '../util/users'
 import Navbar from '../components/Navbar'
 
 
@@ -14,6 +13,8 @@ const Login = () => {
   const hangleLogin = async (e) => {
     e.preventDefault();
 
+    setError('');
+
     if(!username){
       setError('Please enter username');
       return;
@@ -24,19 +25,31 @@ const Login = () => {
       return;
     }
 
-    if(!findUser(username, password)){
-      setError('User not found');
-      return;
+    const response = await fetch('http://localhost:8000/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json" 
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      })
+    });
+
+    const data = await response.json();
+
+    console.log(data);
+
+    if(data){
+      setError('');
+      if(username === 'staff'){
+        navigate('/staffHome');
+        return;
+      }
+      navigate('/');
     }
-    setError('');
 
-    if(username === 'staff'){
-      navigate('/staffHome');
-      return;
-    }
-
-    navigate('/');
-
+    setError('User not Found');
   }
 
   return (
