@@ -88,6 +88,39 @@ app.post('/login', async (req, res) => {
     
     return res.json(user).status(200)
 
+});
+
+app.get('/users/:id', async (req, res) => {
+    const id = req.params.id;
+    const user = await User.findOne({_id: id});
+
+    if(!user){
+        return res.status(400).json(null);
+    }
+
+    return res.json(user).status(200);
+})
+
+app.patch('/users/:id', async (req, res) => {
+    const id = req.params.id;
+    const data = req.body;
+
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+          id,
+          { $push: { family: data } },
+          { new: true } 
+        );
+
+        if(!updatedUser){
+            return res.status(400).json(null);
+        }
+
+        return res.json(updatedUser).status(200);
+
+    }catch(error){
+        return error
+    }
 })
 
 
