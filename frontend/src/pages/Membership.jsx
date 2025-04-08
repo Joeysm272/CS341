@@ -91,11 +91,17 @@ const Memberships = () => {
         </div>
         <div className="col-span-1 md:col-span-2">
           <label className="block text-sm font-medium text-gray-700">Family Members</label>
-          <ul className="mt-2 bg-gray-100 p-2 rounded-md shadow-sm">
+          <ul className="mt-2 bg-gray-100 p-2 rounded-md shadow-sm space-y-2">
             {familyMembers.map((member, index) => (
-              <li key={index} className="p-1 border-b">{member.firstName} {member.lastName} {member.relationship}</li>
-            ))}
-          </ul>
+              <li key={index} className="p-2 bg-white rounded shadow-sm border flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                <div>
+                  <p className="text-sm"><span className="font-semibold">First Name:</span> {member.firstName}</p>
+                  <p className="text-sm"><span className="font-semibold">Last Name:</span> {member.lastName}</p>
+                  <p className="text-sm"><span className="font-semibold">Relationship:</span> {member.relationship}</p>
+                </div>
+              </li>
+              ))}
+            </ul>
           <button
             onClick={() => setIsModalOpen(true)}
             className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition"

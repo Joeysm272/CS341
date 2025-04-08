@@ -228,69 +228,93 @@ const StaffHome = () => {
           </form>
         </div>
 
-        {/* Display the Created Classes */}
-        <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Current Classes</h2>
-          {classes.length === 0 ? (
-            <p className="text-gray-500">No classes created yet.</p>
-          ) : (
-            <ul className="space-y-4">
-              {classes.map((cls, index) => (
-                <li key={index} className="p-4 border rounded-lg shadow-sm bg-gray-50">
-                  <h3 className="text-lg font-semibold">{cls.programName} ({cls.type})</h3>
-                  <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
-                  <p className="text-sm text-gray-600">
-                    First Class:{" "}
-                    {new Date(cls.startDate).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Last Class:{" "}
-                    {new Date(cls.endDate).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                  <p className="text-sm text-gray-600">Location: {cls.location}</p>
-                  <p className="text-sm text-gray-600">Capacity: {cls.capacity}</p>
-                  <p className="text-sm text-gray-600">Member Price: ${cls.memberPrice}</p>
-                  <p className="text-sm text-gray-600">Non-Member Price: ${cls.nonMemberPrice}</p>
-                  <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
+          {/* Display the Created Classes */}
+          <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Current Classes</h2>
 
-                  {/* Enrollment Counter */}
-                  <p className="text-sm font-bold text-green-600">
-                    Enrolled: {cls.enrolled} / {cls.capacity}
-                  </p>
+            {classes.length === 0 ? (
+              <p className="text-gray-500">No classes created yet.</p>
+            ) : (
+              <div className='flex'>
+            <div>
+              <ul className="space-y-4">
+                {classes.map((cls, index) => (
+                  <li key={index} className="p-4 border rounded-lg shadow-sm bg-gray-50 flex flex-col md:flex-row justify-between gap-6">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold">{cls.programName} ({cls.type})</h3>
+                      <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
+                      <p className="text-sm text-gray-600">
+                        First Class:{" "}
+                        {new Date(cls.startDate).toLocaleString("en-US", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Last Class:{" "}
+                        {new Date(cls.endDate).toLocaleString("en-US", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                      <p className="text-sm text-gray-600">Location: {cls.location}</p>
+                      <p className="text-sm text-gray-600">Capacity: {cls.capacity}</p>
+                      <p className="text-sm text-gray-600">Member Price: ${cls.memberPrice}</p>
+                      <p className="text-sm text-gray-600">Non-Member Price: ${cls.nonMemberPrice}</p>
+                      <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
 
-                  <div className="flex space-x-2 mt-3">
-                    <button
-                      onClick={() => handleEdit(index)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {deleteProgram(classes[index]._id), handleDelete(index)}}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                      {/* Enrollment Counter */}
+                      <p className="text-sm font-bold text-green-600">
+                        Enrolled: {cls.enrolled} / {cls.capacity}
+                      </p>
+
+                      <div className="flex space-x-2 mt-3">
+                        <button
+                          onClick={() => handleEdit(index)}
+                          className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => {deleteProgram(classes[index]._id), handleDelete(index)}}
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-gray-700 mb-2">Enrolled Participants</h4>
+              
+                      <input
+                        type="text"
+                        placeholder="Search participants..."
+                        className="w-full p-2 border border-gray-300 rounded mb-3"
+                      />
+
+                      <ul className="space-y-1 max-h-32 overflow-y-auto">
+      
+                      </ul>
+
+                      <p className="text-sm text-gray-400">No participants yet.</p>
+                     </div>
+                  </li>
+                ))}
+              </ul>
+              </div>
+                
+                </div>
+            )}
+            
+          </div>
         </div>
       </div>
-    </div>
   );
 };
 
