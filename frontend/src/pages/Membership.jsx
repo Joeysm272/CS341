@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../index.css';
 
 const Memberships = () => {
+  const navigate = useNavigate();  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [familyMembers, setFamilyMembers] = useState([]);
   const [newFamilyMember, setNewFamilyMember] = useState({
@@ -17,7 +19,11 @@ const Memberships = () => {
   };
 
   const addFamilyMember = () => {
-    if (newFamilyMember.firstName && newFamilyMember.lastName && newFamilyMember.relationship) {
+    if (
+      newFamilyMember.firstName &&
+      newFamilyMember.lastName &&
+      newFamilyMember.relationship
+    ) {
       setFamilyMembers([...familyMembers, newFamilyMember]);
       setNewFamilyMember({ firstName: '', lastName: '', relationship: '' });
       setIsModalOpen(false);
@@ -27,6 +33,16 @@ const Memberships = () => {
   return (
     <div>
       <Navbar />
+      {/* Dashboard Button at the Top */}
+      <div className="p-4">
+        <button
+          onClick={() => navigate('/Dashboard')}
+          className="bg-green-500 text-white px-4 py-2 rounded mb-4 hover:bg-green-600 transition"
+        >
+          View Membership Dashboard
+        </button>
+      </div>
+
       <h1 className="text-left text-3xl font-serif">Account Information</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
         <div>
