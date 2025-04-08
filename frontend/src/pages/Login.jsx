@@ -38,6 +38,9 @@ const Login = () => {
 
     const data = await response.json();
 
+    localStorage.setItem('userId', data._id);
+    localStorage.setItem('username', data.username);
+
     console.log(data);
 
     if(data){
@@ -54,7 +57,6 @@ const Login = () => {
 
   return (
     <div>
-        <Navbar />
 
         <div className='flex items-center justify-center mt-28'>
           <div className='border rounded px-7 py-10 w-96'>
