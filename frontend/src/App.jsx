@@ -8,6 +8,7 @@ import StaffHome from './pages/StaffHome';
 import Membership from './pages/Membership';
 import Programs from './pages/Programs';
 import MembershipDashboard from './pages/MembershipDashboard';
+import RequireStaff from './components/protectStaff';
 
 const routes = (
   <Router>
@@ -15,7 +16,7 @@ const routes = (
       <Route path='/login' exact element={<Login />}/>
       <Route path='/' exact element={<Home />}/>
       <Route path='/sign-up' exact element={<SignUp />}/>
-      <Route path='/StaffHome' exact element={<StaffHome />}/>
+      <Route path='/StaffHome'element={<RequireStaff> <StaffHome /></RequireStaff>}/>
       <Route path='/Membership' exact element={<Membership />}/>
       <Route path='/Programs' exact element={<Programs />}/>
       <Route path='/Dashboard' exact element={<MembershipDashboard />}/>
