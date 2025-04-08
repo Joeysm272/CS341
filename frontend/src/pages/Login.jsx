@@ -40,6 +40,9 @@ const Login = () => {
 
     localStorage.setItem('userId', data._id);
     localStorage.setItem('username', data.username);
+    localStorage.setItem('firstName', data.firstname);
+    localStorage.setItem('lastName', data.lastName);
+    localStorage.setItem('email', data.email);
 
     console.log(data);
 

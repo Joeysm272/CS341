@@ -1,32 +1,41 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ClassCalendar from '../components/ClassCalendar';
 
 const MembershipDashboard = () => {
-  // Dummy profile data for now
+  const navigate = useNavigate();
+
+  // Retrieve user info from localStorage
+  const [user, setUser] = useState(() => ({
+    userId: localStorage.getItem('userId'),
+    username: localStorage.getItem('username'),
+    email: localStorage.getItem('email')
+  }));
+
+  // Dummy profile data for now using the username from localStorage if available.
   const [profile, setProfile] = useState({
-    name: 'John Doe',
+    name: user.username || 'John Doe',
     status: 'Active Member',
-    email: 'johndoe@example.com',
+    email: user.email || 'johndoe@example.com'
   });
+
   // State to store class data fetched from the backend
   const [classes, setClasses] = useState([]);
   // Dummy notifications for now
   const [notifications, setNotifications] = useState([
     {
       message: 'Your class "Yoga for Beginners" starts in 1 hour.',
-      date: new Date().toISOString(),
+      date: new Date().toISOString()
     },
     {
       message: 'Class "Advanced Swimming" has been cancelled.',
-      date: new Date().toISOString(),
-    },
+      date: new Date().toISOString()
+    }
   ]);
-
   // State to toggle calendar modal popup
   const [showCalendar, setShowCalendar] = useState(false);
 
-  // Fetch class data from the backend on component mount
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -45,6 +54,9 @@ const MembershipDashboard = () => {
   return (
     <div>
       <Navbar />
+      
+      {/* Dynamic User Header - only shows if user exists */}
+      
       <div className="max-w-6xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">Membership Dashboard</h1>
 
@@ -83,7 +95,7 @@ const MembershipDashboard = () => {
                         month: '2-digit',
                         day: '2-digit',
                         hour: '2-digit',
-                        minute: '2-digit',
+                        minute: '2-digit'
                       })}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -93,7 +105,7 @@ const MembershipDashboard = () => {
                         month: '2-digit',
                         day: '2-digit',
                         hour: '2-digit',
-                        minute: '2-digit',
+                        minute: '2-digit'
                       })}
                     </p>
                     <p className="text-sm text-gray-600">Location: {cls.location}</p>
@@ -114,12 +126,12 @@ const MembershipDashboard = () => {
                   <li key={idx} className="border p-2 rounded">
                     {note.message}
                     <span className="text-xs text-gray-500 ml-2">
-                    {new Date(note.date).toLocaleString('en-US', {
+                      {new Date(note.date).toLocaleString('en-US', {
                         year: 'numeric',
                         month: '2-digit',
                         day: '2-digit',
                         hour: '2-digit',
-                        minute: '2-digit',
+                        minute: '2-digit'
                       })}
                     </span>
                   </li>
