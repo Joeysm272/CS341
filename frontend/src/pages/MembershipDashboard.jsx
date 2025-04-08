@@ -10,12 +10,14 @@ const MembershipDashboard = () => {
   const [user, setUser] = useState(() => ({
     userId: localStorage.getItem('userId'),
     username: localStorage.getItem('username'),
+    firstName: localStorage.getItem('firstName'),
+    lastName: localStorage.getItem('lastName'),
     email: localStorage.getItem('email')
   }));
 
   // Dummy profile data for now using the username from localStorage if available.
   const [profile, setProfile] = useState({
-    name: user.username || 'John Doe',
+    name: user.firstName + ' ' + user.lastName || 'John Doe',
     status: 'Active Member',
     email: user.email || 'johndoe@example.com'
   });
