@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const familyMemberSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    relation: { type: String, required: true } 
+    firstName: { type: String },
+    lastName: {type: String },
+    relationship: { type: String } 
   });
 
 const userSchema = new Schema({

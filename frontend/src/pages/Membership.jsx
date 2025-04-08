@@ -1,10 +1,19 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> 681f6447b33ae00b9978e192f9e93bc8f6c278a3
 import Navbar from '../components/Navbar';
 import '../index.css';
 
+
 const Memberships = () => {
+<<<<<<< HEAD
   const navigate = useNavigate();  
+=======
+
+>>>>>>> 681f6447b33ae00b9978e192f9e93bc8f6c278a3
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [familyMembers, setFamilyMembers] = useState([]);
   const [newFamilyMember, setNewFamilyMember] = useState({
@@ -13,11 +22,19 @@ const Memberships = () => {
     relationship: '',
   });
 
+  const userId = localStorage.getItem('userId');
+  const userFirstName = localStorage.getItem('firstName');
+  const userLastName = localStorage.getItem('lastName');
+  const userEmail = localStorage.getItem('email');
+  const userPhone = localStorage.getItem('phone');
+
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewFamilyMember({ ...newFamilyMember, [name]: value });
   };
 
+<<<<<<< HEAD
   const addFamilyMember = () => {
     if (
       newFamilyMember.firstName &&
@@ -26,9 +43,50 @@ const Memberships = () => {
     ) {
       setFamilyMembers([...familyMembers, newFamilyMember]);
       setNewFamilyMember({ firstName: '', lastName: '', relationship: '' });
+=======
+  const addFamilyMember = async () => {
+    if (newFamilyMember.firstName && newFamilyMember.lastName && newFamilyMember.relationship) {
+
+      const response = await fetch(`http://localhost:8000/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify(newFamilyMember)
+      });
+
+      const data = await response.json();
+
+      console.log(newFamilyMember)
+      console.log(data);
+      
+>>>>>>> 681f6447b33ae00b9978e192f9e93bc8f6c278a3
       setIsModalOpen(false);
     }
   };
+
+  useEffect(() => {
+    const fetchFamily = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/users/${userId}`);
+        const data = await res.json();
+
+        console.log(data);
+
+        if (res.ok && data.family) {
+          setFamilyMembers(data.family);
+        } else {
+          console.error('No family data found');
+        }
+      } catch (err) {
+        console.error('Error fetching family:', err);
+      } 
+    };
+
+    fetchFamily();
+  }, []);
+
+
 
   return (
     <div>
@@ -46,26 +104,26 @@ const Memberships = () => {
       <h1 className="text-left text-3xl font-serif">Account Information</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">First Name</label>
-          <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+          <label className="block text-sm font-medium text-gray-700">First Name: {userFirstName}</label>
+          {/* <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" /> */}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Last Name</label>
-          <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+          <label className="block text-sm font-medium text-gray-700">Last Name: {userLastName}</label>
+          {/* <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" /> */}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-          <input type="tel" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+          <label className="block text-sm font-medium text-gray-700">Phone Number: {userPhone}</label>
+          {/* <input type="tel" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" /> */}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+          <label className="block text-sm font-medium text-gray-700">Email: {userEmail}</label>
+          {/* <input type="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" /> */}
         </div>
         <div className="col-span-1 md:col-span-2">
           <label className="block text-sm font-medium text-gray-700">Family Members</label>
           <ul className="mt-2 bg-gray-100 p-2 rounded-md shadow-sm">
             {familyMembers.map((member, index) => (
-              <li key={index} className="p-1 border-b">{`${member.firstName} ${member.lastName} (${member.relationship})`}</li>
+              <li key={index} className="p-1 border-b">{member.firstName} {member.lastName} {member.relationship}</li>
             ))}
           </ul>
           <button

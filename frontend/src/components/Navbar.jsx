@@ -22,7 +22,7 @@ const Navbar = () => {
             <p className='mb-0'>Welcome</p>
             <p className='mb-0'>{username}</p>
           </div>
-          <button onClick={() => {navigate('/login'), localStorage.removeItem('userId')}} className='text-md bg-[#00968b] px-3 py-2 border rounded hover:bg-[#007b70]'>Logout</button>
+          <button onClick={() => {navigate('/login'), localStorage.clear()}} className='text-md bg-[#00968b] px-3 py-2 border rounded hover:bg-[#007b70]'>Logout</button>
         </div>
               ) : (
         <button onClick={() => {navigate('/login')}} className='text-md bg-[#00968b] px-3 py-2 border rounded hover:bg-[#007b70]'>Login</button>
