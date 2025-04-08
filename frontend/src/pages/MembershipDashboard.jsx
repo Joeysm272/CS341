@@ -114,7 +114,13 @@ const MembershipDashboard = () => {
                   <li key={idx} className="border p-2 rounded">
                     {note.message}
                     <span className="text-xs text-gray-500 ml-2">
-                      {new Date(note.date).toLocaleString()}
+                    {new Date(note.date).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </span>
                   </li>
                 ))}
