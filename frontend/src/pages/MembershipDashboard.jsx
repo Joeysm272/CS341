@@ -12,7 +12,7 @@ const dayMap = {
 };
 
 const MembershipDashboard = () => {
-  // Retrieve user info from localStorage
+
   const [user] = useState(() => ({
     userId: localStorage.getItem('userId'),
     firstName: localStorage.getItem('firstName'),
@@ -27,21 +27,13 @@ const MembershipDashboard = () => {
     email: user.email || 'johndoe@example.com'
   });
 
-  // New state to hold the registrations for this user
+  // State to hold the user's registrations (if needed)
   const [registrations, setRegistrations] = useState([]);
-  // Dummy notifications for now
-  const [notifications] = useState([
-    {
-      message: 'Your class "Yoga for Beginners" starts in 1 hour.',
-      date: new Date().toISOString(),
-    },
-    {
-      message: 'Class "Advanced Swimming" has been cancelled.',
-      date: new Date().toISOString(),
-    }
-  ]);
 
-  // Fetch the registered classes for the current user
+  // State for notifications
+  const [notifications, setNotifications] = useState([]);
+
+  // Fetch the registered classes for the current user (if needed)
   useEffect(() => {
     const getMyRegistrations = async () => {
       if (!user.userId) return;
@@ -49,13 +41,28 @@ const MembershipDashboard = () => {
         const res = await fetch(`http://localhost:8000/registrations/my-registrations/${user.userId}`);
         if (!res.ok) throw new Error('Failed to fetch registrations');
         const data = await res.json();
-        console.log("Fetched registrations:", data);
         setRegistrations(data);
       } catch (error) {
         console.error('Error fetching registrations:', error);
       }
     };
     getMyRegistrations();
+  }, [user.userId]);
+
+  // Fetch notifications for the current user
+  useEffect(() => {
+    const getNotifications = async () => {
+      if (!user.userId) return;
+      try {
+        const res = await fetch(`http://localhost:8000/notifications/${user.userId}`);
+        if (!res.ok) throw new Error('Failed to fetch notifications');
+        const data = await res.json();
+        setNotifications(data);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+    getNotifications();
   }, [user.userId]);
 
   return (
@@ -85,33 +92,38 @@ const MembershipDashboard = () => {
                   <li key={reg._id || idx} className="p-4 border rounded-lg shadow-sm bg-gray-50">
                     <h3 className="text-lg font-semibold">
                       {cls.programName} ({cls.type})
+                      {cls.cancelled && (
+                        <span className="ml-2 bg-red-500 text-white px-2 py-1 rounded text-xs">
+                          Cancelled
+                        </span>
+                      )}
                     </h3>
                     <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
                     <p className="text-sm text-gray-600">
-                      First Class:{" "}
-                      {new Date(cls.startDate).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
+                      First Class:{' '}
+                      {new Date(cls.startDate).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
                       })}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Last Class:{" "}
-                      {new Date(cls.endDate).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
+                      Last Class:{' '}
+                      {new Date(cls.endDate).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
                       })}
                     </p>
                     <p className="text-sm text-gray-600">Location: {cls.location}</p>
-                    {/* Display full day names for availableDays */}
                     {cls.availableDays && cls.availableDays.length > 0 && (
                       <p className="text-sm text-gray-600">
-                        Occurs on:{" "}
+                        Occurs on:{' '}
                         {cls.availableDays
                           .map((dayAbbr) => dayMap[dayAbbr] || dayAbbr)
-                          .join(", ")}{" "}
-                        ({cls.availableDays.length} {cls.availableDays.length > 1 ? 'days' : 'day'} per week)
+                          .join(', ')}{' '}
+                        ({cls.availableDays.length}{' '}
+                        {cls.availableDays.length > 1 ? 'days' : 'day'} per week)
                       </p>
                     )}
                   </li>
@@ -129,15 +141,15 @@ const MembershipDashboard = () => {
           ) : (
             <ul className="space-y-2">
               {notifications.map((note, idx) => (
-                <li key={idx} className="border p-2 rounded">
-                  {note.message}
+                <li key={note._id || idx} className="border p-2 rounded">
+                  <p>{note.message}</p>
                   <span className="text-xs text-gray-500 ml-2">
-                    {new Date(note.date).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
+                    {new Date(note.date).toLocaleString('en-US', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
                     })}
                   </span>
                 </li>

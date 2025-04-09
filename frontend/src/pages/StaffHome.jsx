@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 
 const StaffHome = () => {
   const [classes, setClasses] = useState([]);
-  const [allRegistrations, setAllRegistrations] = useState([]); // State for all registrations
+  const [allRegistrations, setAllRegistrations] = useState([]); // For displaying participants
   const [formData, setFormData] = useState({
     programName: '',
     type: '',
@@ -12,15 +12,27 @@ const StaffHome = () => {
     endDate: '',
     startTime: '',       // e.g., "08:00"
     endTime: '',         // e.g., "09:30"
-    availableDays: [],   // e.g. ['MO', 'WE', 'FR']
+    availableDays: [],   // e.g., ['MO', 'WE', 'FR']
     location: '',
     capacity: '',
     memberPrice: '',
     nonMemberPrice: '',
     desc: '',
     enrolled: 0,
+    cancelled: false     // Field to track cancellation
   });
   const [editIndex, setEditIndex] = useState(null);
+
+  // Mapping for full day names
+  const dayMap = {
+    SU: 'Sunday',
+    MO: 'Monday',
+    TU: 'Tuesday',
+    WE: 'Wednesday',
+    TH: 'Thursday',
+    FR: 'Friday',
+    SA: 'Saturday'
+  };
 
   // Helper function to compute duration between two "HH:mm" strings
   const computeDuration = (start, end) => {
@@ -37,22 +49,36 @@ const StaffHome = () => {
     return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
   };
 
-  // Transform stored date and time fields to proper formats for editing
+  // Helper function to convert "HH:mm" (24-hour) to "h:mm AM/PM"
+  const convertTo12Hour = (timeStr) => {
+    const [hourStr, minuteStr] = timeStr.split(':');
+    let hour = parseInt(hourStr, 10);
+    const minute = minuteStr;
+    let period = 'AM';
+    if (hour === 0) {
+      hour = 12;
+    } else if (hour === 12) {
+      period = 'PM';
+    } else if (hour > 12) {
+      hour = hour - 12;
+      period = 'PM';
+    }
+    return `${hour}:${minute} ${period}`;
+  };
+
+  // Transform stored date and time fields for editing
   const handleEdit = (index) => {
     const classToEdit = classes[index];
     let startDateFormatted = '';
     let endDateFormatted = '';
-
     if (classToEdit.startDate) {
       startDateFormatted = new Date(classToEdit.startDate).toISOString().split('T')[0];
     }
     if (classToEdit.endDate) {
       endDateFormatted = new Date(classToEdit.endDate).toISOString().split('T')[0];
     }
-
     const startTime = classToEdit.startTime || '';
     const endTime = classToEdit.endTime || '';
-
     setFormData({
       ...classToEdit,
       startDate: startDateFormatted,
@@ -85,31 +111,39 @@ const StaffHome = () => {
     }
   };
 
-  // Handle form submission (POST new program then update local state)
+  // Updated handleSubmit for Create vs. Edit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const res = await fetch('http://localhost:8000/programs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      if (!res.ok) throw new Error('Failed to create class');
-      const postedData = await res.json();
-
+      let res, postedData;
       if (editIndex !== null) {
+        // Editing an existing class: use the PUT endpoint
+        const programId = classes[editIndex]._id;
+        res = await fetch(`http://localhost:8000/programs/${programId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        if (!res.ok) throw new Error('Failed to update class');
+        postedData = await res.json();
         const updatedClasses = [...classes];
         updatedClasses[editIndex] = postedData;
         setClasses(updatedClasses);
         setEditIndex(null);
       } else {
+        // Creating a new class: use POST
+        res = await fetch('http://localhost:8000/programs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        if (!res.ok) throw new Error('Failed to create class');
+        postedData = await res.json();
         setClasses(prev => [...prev, postedData]);
       }
     } catch (error) {
-      console.error('Error posting class:', error);
+      console.error('Error posting/updating class:', error);
     }
-
     // Reset the form
     setFormData({
       programName: '',
@@ -126,6 +160,7 @@ const StaffHome = () => {
       nonMemberPrice: '',
       desc: '',
       enrolled: 0,
+      cancelled: false,
     });
   };
 
@@ -159,22 +194,6 @@ const StaffHome = () => {
     fetchAllRegistrations();
   }, []);
 
-  const convertTo12Hour = (timeStr) => {
-    const [hourStr, minuteStr] = timeStr.split(':');
-    let hour = parseInt(hourStr, 10);
-    const minute = minuteStr; // string format
-    let period = 'AM';
-    if (hour === 0) {
-      hour = 12;
-    } else if (hour === 12) {
-      period = 'PM';
-    } else if (hour > 12) {
-      hour = hour - 12;
-      period = 'PM';
-    }
-    return `${hour}:${minute} ${period}`;
-  };
-
   // Re-fetch programs whenever registrations change (to update enrollment count)
   useEffect(() => {
     const refetchPrograms = async () => {
@@ -190,15 +209,25 @@ const StaffHome = () => {
     refetchPrograms();
   }, [allRegistrations]);
 
-  // Mapping for full day names
-  const dayMap = {
-    SU: 'Sunday',
-    MO: 'Monday',
-    TU: 'Tuesday',
-    WE: 'Wednesday',
-    TH: 'Thursday',
-    FR: 'Friday',
-    SA: 'Saturday'
+  // Cancel class functionality
+  const cancelClass = async (classId) => {
+    try {
+      const res = await fetch(`http://localhost:8000/programs/${classId}/cancel`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setClasses(prevPrograms =>
+        prevPrograms.map(program =>
+          program._id === classId ? { ...program, cancelled: true } : program
+        )
+      );
+      alert("Class has been cancelled and notifications sent.");
+    } catch (error) {
+      console.error("Error cancelling class:", error);
+      alert(error.message);
+    }
   };
 
   return (
@@ -247,7 +276,6 @@ const StaffHome = () => {
               className="border p-2 rounded"
               required
             />
-
             {/* Date Fields (Side-by-Side) */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -280,7 +308,6 @@ const StaffHome = () => {
                 />
               </div>
             </div>
-
             {/* Time Fields (Side-by-Side) */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -312,15 +339,13 @@ const StaffHome = () => {
                 />
               </div>
             </div>
-
             {/* Duration Display */}
             {formData.startTime && formData.endTime && (
               <p className="text-sm text-gray-600">
-                Duration: {formData.startTime} - {formData.endTime} (
+                Duration: {convertTo12Hour(formData.startTime)} - {convertTo12Hour(formData.endTime)} (
                 {computeDuration(formData.startTime, formData.endTime)})
               </p>
             )}
-
             <input
               type="text"
               name="location"
@@ -364,7 +389,6 @@ const StaffHome = () => {
               onChange={handleChange}
               className="border p-2 rounded"
             ></textarea>
-
             {/* Inline Available Days Selection */}
             <div className="border p-4 rounded">
               <label className="block font-medium mb-2">
@@ -393,7 +417,6 @@ const StaffHome = () => {
                 ))}
               </div>
             </div>
-
             <button
               type="submit"
               className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -411,7 +434,7 @@ const StaffHome = () => {
           ) : (
             <ul className="space-y-4">
               {classes.map((cls, index) => {
-                // For each class, filter registrations to get enrolled participants
+                // Filter registrations to get enrolled participants
                 const participants = allRegistrations.filter(
                   (reg) => reg.programId && reg.programId._id.toString() === cls._id.toString()
                 );
@@ -423,6 +446,11 @@ const StaffHome = () => {
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold">
                         {cls.programName} ({cls.type})
+                        {cls.cancelled && (
+                          <span className="ml-2 bg-red-500 text-white px-2 py-1 rounded text-xs">
+                            Cancelled
+                          </span>
+                        )}
                       </h3>
                       <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
                       <p className="text-sm text-gray-600">
@@ -449,23 +477,22 @@ const StaffHome = () => {
                       {cls.startTime && cls.endTime && (
                         <p className="text-sm text-gray-600">
                           Duration: {convertTo12Hour(cls.startTime)} - {convertTo12Hour(cls.endTime)} (
-                          {
-                            (() => {
-                              const computeDuration = (start, end) => {
-                                const [sH, sM] = start.split(':').map(Number);
-                                const [eH, eM] = end.split(':').map(Number);
-                                let sDate = new Date(0, 0, 0, sH, sM);
-                                let eDate = new Date(0, 0, 0, eH, eM);
-                                let diff = eDate - sDate;
-                                if (diff < 0) diff += 24 * 60 * 60 * 1000;
-                                const totalMins = Math.floor(diff / 60000);
-                                const hours = Math.floor(totalMins / 60);
-                                const minutes = totalMins % 60;
-                                return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
-                              };
-                              return computeDuration(cls.startTime, cls.endTime);
-                            })()
-                          })
+                          {(() => {
+                            const computeDuration = (start, end) => {
+                              const [sH, sM] = start.split(':').map(Number);
+                              const [eH, eM] = end.split(':').map(Number);
+                              let sDate = new Date(0, 0, 0, sH, sM);
+                              let eDate = new Date(0, 0, 0, eH, eM);
+                              let diff = eDate - sDate;
+                              if (diff < 0) diff += 24 * 60 * 60 * 1000;
+                              const totalMins = Math.floor(diff / 60000);
+                              const hours = Math.floor(totalMins / 60);
+                              const minutes = totalMins % 60;
+                              return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+                            };
+                            return computeDuration(cls.startTime, cls.endTime);
+                          })()}
+                          )
                         </p>
                       )}
                       {cls.availableDays && cls.availableDays.length > 0 && (
@@ -477,30 +504,59 @@ const StaffHome = () => {
                           ({cls.availableDays.length} {cls.availableDays.length > 1 ? 'days' : 'day'} per week)
                         </p>
                       )}
-                      <p className="text-sm font-bold text-green-600">
-                        Enrolled: {cls.enrolled} / {cls.capacity}
+                      <p className={`text-sm font-bold ${
+                        cls.enrolled >= cls.capacity
+                          ? 'text-red-600'
+                          : (cls.enrolled / cls.capacity >= 0.75 ? 'text-yellow-600' : 'text-green-600')
+                      }`}>
+                        Enrolled: {cls.enrolled}/{cls.capacity}
                       </p>
                     </div>
-                    <div className="mt-4">
-                      <h4 className="font-semibold text-gray-700 mb-2">
-                        Enrolled Participants
-                      </h4>
-                      <input
-                        type="text"
-                        placeholder="Search participants..."
-                        className="w-full p-2 border border-gray-300 rounded mb-3"
-                      />
-                      <ul className="space-y-1 max-h-32 overflow-y-auto">
-                        {participants.length > 0 ? (
-                          participants.map((reg) => (
-                            <li key={reg._id} className="text-sm">
-                              {reg.memberId.firstName} {reg.memberId.lastName}
-                            </li>
-                          ))
-                        ) : (
-                          <p className="text-sm text-gray-400">No participants yet.</p>
-                        )}
-                      </ul>
+                    <div className="mt-4 flex flex-col items-end">
+                      {/* Edit Button */}
+                      <button
+                        onClick={() => handleEdit(index)}
+                        className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 mb-2"
+                      >
+                        Edit
+                      </button>
+                      {/* Cancel Class Button */}
+                      {!cls.cancelled ? (
+                        <button
+                          onClick={() => cancelClass(cls._id)}
+                          className="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700"
+                        >
+                          Cancel Class
+                        </button>
+                      ) : (
+                        <span className="bg-gray-700 text-white px-3 py-2 rounded">
+                          Cancelled
+                        </span>
+                      )}
+                      {/* Participant Search and List */}
+                      <div className="mt-4 w-full">
+                        <h4 className="font-semibold text-gray-700 mb-2">
+                          Enrolled Participants
+                        </h4>
+                        <input
+                          type="text"
+                          placeholder="Search participants..."
+                          className="w-full p-2 border border-gray-300 rounded mb-3"
+                        />
+                        <ul className="space-y-1 max-h-32 overflow-y-auto">
+                          {allRegistrations
+                            .filter(
+                              (reg) =>
+                                reg.programId &&
+                                reg.programId._id.toString() === cls._id.toString()
+                            )
+                            .map((reg) => (
+                              <li key={reg._id} className="text-sm">
+                                {reg.memberId.firstName} {reg.memberId.lastName}
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
                     </div>
                   </li>
                 );

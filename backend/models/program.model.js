@@ -2,26 +2,25 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const programSchema = new Schema({
-    programName: {type: String},
-    type: {type: String},
-    instructor: {type: String},
-    startDate: {type: String},
-    endDate: {type: String},
-    startTime: {type: String},
-    endTime: {type: String},
-    availableDays: {
-        type: [String],
-        enum: ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'],
-        default: [] // If nothing is provided, defaults to an empty array
-    },
-    availableDays: [],
-    location: {type: String},
-    capacity: {type: Number},
-    memberPrice: {type: Number},
-    nonMemberPrice: {type: Number},
-    desc: {type: String},
-    enrolled: {type: Number}
+  programName: { type: String, required: true },
+  type: { type: String, required: true },
+  instructor: { type: String, required: true },
+  startDate: { type: String, required: true },
+  endDate: { type: String, required: true },
+  startTime: { type: String, required: true },
+  endTime: { type: String, required: true },
+  availableDays: {
+    type: [String],
+    enum: ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'],
+    default: [] // Defaults to empty array if nothing provided
+  },
+  location: { type: String, required: true },
+  capacity: { type: Number, required: true },
+  memberPrice: { type: Number, required: true },
+  nonMemberPrice: { type: Number, required: true },
+  desc: { type: String },
+  enrolled: { type: Number, default: 0 },
+  cancelled: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('programs', programSchema);
-

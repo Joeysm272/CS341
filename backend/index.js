@@ -7,7 +7,8 @@ const config = require('./config.json');
 // Import models
 const Program = require('./models/program.model');
 const User = require('./models/users.model');
-const Registration = require('./models/Registration'); // Registration model
+const Registration = require('./models/Registration');
+const Notification = require('./models/Notifications'); // Ensure the file is named Notifications.js (or change to Notification if desired)
 
 const app = express();
 
@@ -102,6 +103,19 @@ app.put("/programs/:id/enrollment", async (req, res) => {
     res.status(500).json({ error: "Failed to update enrollment" });
   }
 });
+
+// PUT endpoint for updating an existing program
+app.put('/programs/:id', async (req, res) => {
+  try {
+    const programId = req.params.id;
+    const updatedProgram = await Program.findByIdAndUpdate(programId, req.body, { new: true });
+    if (!updatedProgram) return res.status(404).json({ error: "Program not found" });
+    res.json(updatedProgram);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update program", details: error.message });
+  }
+});
+
 
 // DELETE a program
 app.delete("/programs/:id", async (req, res) => {
@@ -206,7 +220,7 @@ app.get("/registrations/my-registrations/:memberId", async (req, res) => {
     console.log("Converted memberId:", validMemberId);
 
     const registrations = await Registration.find({ memberId: validMemberId })
-      .populate("programId", "programName type instructor startDate endDate location capacity memberPrice nonMemberPrice desc enrolled availableDays");
+      .populate("programId", "programName type instructor startDate endDate location capacity memberPrice nonMemberPrice desc enrolled availableDays cancelled");
     
     console.log("Fetched registrations for member", memberId, ":", registrations);
     res.json(registrations);
@@ -216,20 +230,57 @@ app.get("/registrations/my-registrations/:memberId", async (req, res) => {
   }
 });
 
+
 // POST a new registration
 app.post("/registrations", async (req, res) => {
   const { memberId, programId } = req.body;
   try {
-    // Prevent duplicate registration
+    // Prevent duplicate registration for the same class
     const existing = await Registration.findOne({ memberId, programId });
     if (existing) {
       return res.status(400).json({ error: "Member is already registered for this class" });
     }
+
+    // Fetch the new program details to check its schedule
+    const newProgram = await Program.findById(programId);
+    if (!newProgram) {
+      return res.status(404).json({ error: "Program not found" });
+    }
+
+    // Fetch all registrations for this member (populated with program details)
+    const userRegistrations = await Registration.find({ memberId }).populate("programId");
+
+    // Define a helper function to check if two date ranges overlap
+    const rangesOverlap = (startA, endA, startB, endB) => {
+      const aStart = new Date(startA);
+      const aEnd = new Date(endA);
+      const bStart = new Date(startB);
+      const bEnd = new Date(endB);
+      return aStart <= bEnd && bStart <= aEnd;
+    };
+
+    // Check for scheduling conflicts with each registration the user already has
+    for (const reg of userRegistrations) {
+      const registeredProgram = reg.programId;
+      if (!registeredProgram) continue;
+
+      const dateConflict = rangesOverlap(newProgram.startDate, newProgram.endDate, registeredProgram.startDate, registeredProgram.endDate);
+      const dayConflict = newProgram.availableDays.some(day => registeredProgram.availableDays.includes(day));
+      const timeConflict = newProgram.startTime === registeredProgram.startTime;
+
+      if (dateConflict && dayConflict && timeConflict) {
+        return res.status(400).json({
+          error: "Double booking detected: You are already registered for a class that conflicts with the selected class."
+        });
+      }
+    }
+
     const registration = new Registration({ memberId, programId });
     await registration.save();
+
     res.status(201).json(registration);
   } catch (error) {
-    res.status(500).json({ error: "Failed to register for class" });
+    res.status(500).json({ error: "Failed to register for class", details: error.message });
   }
 });
 
@@ -242,6 +293,51 @@ app.delete("/registrations/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete registration" });
   }
 });
+
+// ---- Notifications Endpoint ----
+app.put('/programs/:id/cancel', async (req, res) => {
+  try {
+    const programId = req.params.id;
+    
+    // Mark the program as cancelled.
+    const program = await Program.findByIdAndUpdate(
+      programId,
+      { cancelled: true },
+      { new: true }
+    );
+    if (!program) {
+      return res.status(404).json({ message: 'Program not found' });
+    }
+    
+    // Retrieve all registrations for this program
+    const registrations = await Registration.find({ programId });
+    
+    // Create a notification for each registered member
+    for (const reg of registrations) {
+      const notification = new Notification({
+        userId: reg.memberId,
+        message: `The class "${program.programName}" has been cancelled.`,
+      });
+      await notification.save();
+    }
+    
+    res.json({ message: 'Class cancelled and notifications sent.' });
+  } catch (error) {
+    console.error("Error cancelling class:", error);
+    res.status(500).json({ error: "Failed to cancel class", details: error.message });
+  }
+});
+
+app.get('/notifications/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const notifications = await Notification.find({ userId }).sort({ date: -1 });
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch notifications', details: error.message });
+  }
+});
+
 
 app.listen(8000, () => console.log("Server listening on port 8000"));
 

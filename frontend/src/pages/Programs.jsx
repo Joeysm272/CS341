@@ -9,6 +9,17 @@ const Programs = () => {
   // State to store the current user's registrations
   const [myRegistrations, setMyRegistrations] = useState([]);
 
+  // Mapping for full day names
+  const dayMap = {
+    SU: 'Sunday',
+    MO: 'Monday',
+    TU: 'Tuesday',
+    WE: 'Wednesday',
+    TH: 'Thursday',
+    FR: 'Friday',
+    SA: 'Saturday'
+  };
+
   // Fetch all programs
   useEffect(() => {
     const getPrograms = async () => {
@@ -57,10 +68,7 @@ const Programs = () => {
     return `${hour}:${minute} ${period}`;
   };
 
-  // Register a user for a program. This function:
-  // 1. Posts a new registration
-  // 2. Calls the PUT endpoint to increment the enrolled counter in the Program document
-  // 3. Updates local state so that the enrolled count is updated and the user sees the "Registered" label
+  // Register a user for a program
   const registerForProgram = async (programId) => {
     try {
       // Create a new registration
@@ -110,10 +118,13 @@ const Programs = () => {
         ) : (
           <ul className="space-y-4">
             {programList.map((cls, index) => {
-              // Check if the current user is registered for this program
-              const isRegistered = myRegistrations.some(
-                (reg) => reg.programId.toString() === cls._id.toString()
-              );
+              // Check if the current user is registered for this program:
+              const isRegistered = myRegistrations.some((reg) => {
+                if (typeof reg.programId === 'object' && reg.programId !== null) {
+                  return reg.programId._id.toString() === cls._id.toString();
+                }
+                return reg.programId.toString() === cls._id.toString();
+              });
               return (
                 <li key={index} className="p-4 border rounded-lg shadow-sm bg-gray-50">
                   <h3 className="text-lg font-semibold">
@@ -126,8 +137,6 @@ const Programs = () => {
                       year: "numeric",
                       month: "2-digit",
                       day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
                     })}
                   </p>
                   <p className="text-sm text-gray-600">
@@ -135,9 +144,7 @@ const Programs = () => {
                     {new Date(cls.endDate).toLocaleString("en-US", {
                       year: "numeric",
                       month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
+                      day: "2-digit"
                     })}
                   </p>
                   <p className="text-sm text-gray-600">Location: {cls.location}</p>
@@ -148,26 +155,33 @@ const Programs = () => {
                   {cls.startTime && cls.endTime && (
                     <p className="text-sm text-gray-600">
                       Duration: {convertTo12Hour(cls.startTime)} - {convertTo12Hour(cls.endTime)} (
-                      {
-                        (() => {
-                          const computeDuration = (start, end) => {
-                            const [sH, sM] = start.split(':').map(Number);
-                            const [eH, eM] = end.split(':').map(Number);
-                            let sDate = new Date(0, 0, 0, sH, sM);
-                            let eDate = new Date(0, 0, 0, eH, eM);
-                            let diff = eDate - sDate;
-                            if (diff < 0) diff += 24 * 60 * 60 * 1000;
-                            const totalMins = Math.floor(diff / 60000);
-                            const hours = Math.floor(totalMins / 60);
-                            const minutes = totalMins % 60;
-                            return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
-                          };
-                          return computeDuration(cls.startTime, cls.endTime);
-                        })()
-                      })
+                      {(() => {
+                        const computeDuration = (start, end) => {
+                          const [sH, sM] = start.split(':').map(Number);
+                          const [eH, eM] = end.split(':').map(Number);
+                          let sDate = new Date(0, 0, 0, sH, sM);
+                          let eDate = new Date(0, 0, 0, eH, eM);
+                          let diff = eDate - sDate;
+                          if (diff < 0) diff += 24 * 60 * 60 * 1000;
+                          const totalMins = Math.floor(diff / 60000);
+                          const hours = Math.floor(totalMins / 60);
+                          const minutes = totalMins % 60;
+                          return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+                        };
+                        return computeDuration(cls.startTime, cls.endTime);
+                      })()}
+                      )
                     </p>
                   )}
-                  {/* Enrollment Counter */}
+                  {cls.availableDays && cls.availableDays.length > 0 && (
+                    <p className="text-sm text-gray-600">
+                      Occurs on:{" "}
+                      {cls.availableDays
+                        .map((dayAbbr) => dayMap[dayAbbr] || dayAbbr)
+                        .join(", ")}{" "}
+                      ({cls.availableDays.length} {cls.availableDays.length > 1 ? 'days' : 'day'} per week)
+                    </p>
+                  )}
                   <p className={`text-sm font-bold ${
                     cls.enrolled >= cls.capacity
                       ? 'text-red-600'
@@ -175,7 +189,6 @@ const Programs = () => {
                   }`}>
                     Enrolled: {cls.enrolled}/{cls.capacity}
                   </p>
-                  {/* Show register button if not already registered */}
                   {isRegistered ? (
                     <span className="bg-gray-500 text-white px-3 py-2 rounded">
                       Registered
