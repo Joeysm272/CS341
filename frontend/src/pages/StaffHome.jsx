@@ -159,6 +159,22 @@ const StaffHome = () => {
     fetchAllRegistrations();
   }, []);
 
+  const convertTo12Hour = (timeStr) => {
+    const [hourStr, minuteStr] = timeStr.split(':');
+    let hour = parseInt(hourStr, 10);
+    const minute = minuteStr; // string format
+    let period = 'AM';
+    if (hour === 0) {
+      hour = 12;
+    } else if (hour === 12) {
+      period = 'PM';
+    } else if (hour > 12) {
+      hour = hour - 12;
+      period = 'PM';
+    }
+    return `${hour}:${minute} ${period}`;
+  };
+
   // Re-fetch programs whenever registrations change (to update enrollment count)
   useEffect(() => {
     const refetchPrograms = async () => {
@@ -432,7 +448,7 @@ const StaffHome = () => {
                       <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
                       {cls.startTime && cls.endTime && (
                         <p className="text-sm text-gray-600">
-                          Duration: {cls.startTime} - {cls.endTime} (
+                          Duration: {convertTo12Hour(cls.startTime)} - {convertTo12Hour(cls.endTime)} (
                           {
                             (() => {
                               const computeDuration = (start, end) => {

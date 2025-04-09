@@ -40,6 +40,23 @@ const Programs = () => {
     getMyRegistrations();
   }, [userId]);
 
+  // Helper function to convert "HH:mm" (24-hour) to "h:mm AM/PM"
+  const convertTo12Hour = (timeStr) => {
+    const [hourStr, minuteStr] = timeStr.split(':');
+    let hour = parseInt(hourStr, 10);
+    const minute = minuteStr; // string format
+    let period = 'AM';
+    if (hour === 0) {
+      hour = 12;
+    } else if (hour === 12) {
+      period = 'PM';
+    } else if (hour > 12) {
+      hour = hour - 12;
+      period = 'PM';
+    }
+    return `${hour}:${minute} ${period}`;
+  };
+
   // Register a user for a program. This function:
   // 1. Posts a new registration
   // 2. Calls the PUT endpoint to increment the enrolled counter in the Program document
@@ -128,6 +145,28 @@ const Programs = () => {
                   <p className="text-sm text-gray-600">Member Price: ${cls.memberPrice}</p>
                   <p className="text-sm text-gray-600">Non-Member Price: ${cls.nonMemberPrice}</p>
                   <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
+                  {cls.startTime && cls.endTime && (
+                    <p className="text-sm text-gray-600">
+                      Duration: {convertTo12Hour(cls.startTime)} - {convertTo12Hour(cls.endTime)} (
+                      {
+                        (() => {
+                          const computeDuration = (start, end) => {
+                            const [sH, sM] = start.split(':').map(Number);
+                            const [eH, eM] = end.split(':').map(Number);
+                            let sDate = new Date(0, 0, 0, sH, sM);
+                            let eDate = new Date(0, 0, 0, eH, eM);
+                            let diff = eDate - sDate;
+                            if (diff < 0) diff += 24 * 60 * 60 * 1000;
+                            const totalMins = Math.floor(diff / 60000);
+                            const hours = Math.floor(totalMins / 60);
+                            const minutes = totalMins % 60;
+                            return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+                          };
+                          return computeDuration(cls.startTime, cls.endTime);
+                        })()
+                      })
+                    </p>
+                  )}
                   {/* Enrollment Counter */}
                   <p className={`text-sm font-bold ${
                     cls.enrolled >= cls.capacity
