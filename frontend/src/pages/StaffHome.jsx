@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 
 const StaffHome = () => {
   const [classes, setClasses] = useState([]);
-  const [allRegistrations, setAllRegistrations] = useState([]); // new state for all registrations
+  const [allRegistrations, setAllRegistrations] = useState([]); // State for all registrations
   const [formData, setFormData] = useState({
     programName: '',
     type: '',
@@ -37,7 +37,7 @@ const StaffHome = () => {
     return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
   };
 
-  // Transform stored date and time fields to proper formats for the form when editing
+  // Transform stored date and time fields to proper formats for editing
   const handleEdit = (index) => {
     const classToEdit = classes[index];
     let startDateFormatted = '';
@@ -85,7 +85,7 @@ const StaffHome = () => {
     }
   };
 
-  // Handle form submission (POST to backend and update local state)
+  // Handle form submission (POST new program then update local state)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -159,6 +159,21 @@ const StaffHome = () => {
     fetchAllRegistrations();
   }, []);
 
+  // Re-fetch programs whenever registrations change (to update enrollment count)
+  useEffect(() => {
+    const refetchPrograms = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/programs');
+        if (!res.ok) throw new Error('Failed to re-fetch programs');
+        const data = await res.json();
+        setClasses(data);
+      } catch (error) {
+        console.error('Error re-fetching programs:', error);
+      }
+    };
+    refetchPrograms();
+  }, [allRegistrations]);
+
   // Mapping for full day names
   const dayMap = {
     SU: 'Sunday',
@@ -178,6 +193,7 @@ const StaffHome = () => {
           YMCA Staff Portal
         </header>
 
+        {/* Form for Creating / Editing Classes */}
         <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">
             {editIndex !== null ? 'Edit Class' : 'Create a New Class'}
@@ -453,17 +469,22 @@ const StaffHome = () => {
                       <h4 className="font-semibold text-gray-700 mb-2">
                         Enrolled Participants
                       </h4>
-                      {participants.length > 0 ? (
-                        <ul className="space-y-1">
-                          {participants.map((reg) => (
+                      <input
+                        type="text"
+                        placeholder="Search participants..."
+                        className="w-full p-2 border border-gray-300 rounded mb-3"
+                      />
+                      <ul className="space-y-1 max-h-32 overflow-y-auto">
+                        {participants.length > 0 ? (
+                          participants.map((reg) => (
                             <li key={reg._id} className="text-sm">
                               {reg.memberId.firstName} {reg.memberId.lastName}
                             </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-gray-400">No participants yet.</p>
-                      )}
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-400">No participants yet.</p>
+                        )}
+                      </ul>
                     </div>
                   </li>
                 );
