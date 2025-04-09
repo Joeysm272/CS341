@@ -7,6 +7,12 @@ const programSchema = new Schema({
     instructor: {type: String},
     startDate: {type: String},
     endDate: {type: String},
+    availableDays: {
+        type: [String],
+        enum: ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'],
+        default: [] // If nothing is provided, defaults to an empty array
+    },
+    availableDays: [],
     location: {type: String},
     capacity: {type: Number},
     memberPrice: {type: Number},
