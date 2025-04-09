@@ -1,64 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import ClassCalendar from '../components/ClassCalendar';
+
+const dayMap = {
+  SU: 'Sunday',
+  MO: 'Monday',
+  TU: 'Tuesday',
+  WE: 'Wednesday',
+  TH: 'Thursday',
+  FR: 'Friday',
+  SA: 'Saturday'
+};
 
 const MembershipDashboard = () => {
-  const navigate = useNavigate();
-
   // Retrieve user info from localStorage
-  const [user, setUser] = useState(() => ({
+  const [user] = useState(() => ({
     userId: localStorage.getItem('userId'),
-    username: localStorage.getItem('username'),
     firstName: localStorage.getItem('firstName'),
     lastName: localStorage.getItem('lastName'),
-    email: localStorage.getItem('email')
+    email: localStorage.getItem('email'),
   }));
 
-  // Dummy profile data for now using the username from localStorage if available.
-  const [profile, setProfile] = useState({
-    name: user.firstName + ' ' + user.lastName || 'John Doe',
+  // Create a profile object for display
+  const [profile] = useState({
+    name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : 'John Doe',
     status: 'Active Member',
     email: user.email || 'johndoe@example.com'
   });
 
-  // State to store class data fetched from the backend
-  const [classes, setClasses] = useState([]);
+  // New state to hold the registrations for this user
+  const [registrations, setRegistrations] = useState([]);
   // Dummy notifications for now
-  const [notifications, setNotifications] = useState([
+  const [notifications] = useState([
     {
       message: 'Your class "Yoga for Beginners" starts in 1 hour.',
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
     },
     {
       message: 'Class "Advanced Swimming" has been cancelled.',
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
     }
   ]);
-  // State to toggle calendar modal popup
-  const [showCalendar, setShowCalendar] = useState(false);
 
+  // Fetch the registered classes for the current user
   useEffect(() => {
-    const fetchClasses = async () => {
+    const getMyRegistrations = async () => {
+      if (!user.userId) return;
       try {
-        const res = await fetch('http://localhost:8000/programs');
-        if (!res.ok) throw new Error('Failed to fetch classes');
+        const res = await fetch(`http://localhost:8000/registrations/my-registrations/${user.userId}`);
+        if (!res.ok) throw new Error('Failed to fetch registrations');
         const data = await res.json();
-        setClasses(data);
+        console.log("Fetched registrations:", data);
+        setRegistrations(data);
       } catch (error) {
-        console.error('Error fetching classes:', error);
+        console.error('Error fetching registrations:', error);
       }
     };
-
-    fetchClasses();
-  }, []);
+    getMyRegistrations();
+  }, [user.userId]);
 
   return (
-    <div>
+    <div className="bg-gray-100">
       <Navbar />
-      
-      {/* Dynamic User Header - only shows if user exists */}
-      
       <div className="max-w-6xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">Membership Dashboard</h1>
 
@@ -69,96 +71,80 @@ const MembershipDashboard = () => {
           <p>Email: {profile.email}</p>
         </div>
 
-        {/* Calendar Button */}
-        <div className="mt-6">
-          <button
-            onClick={() => setShowCalendar(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Show Your Class Schedule
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Available Classes Section */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Available Classes</h2>
-            {classes.length > 0 ? (
-              <ul className="space-y-4">
-                {classes.map((cls, idx) => (
-                  <li key={cls._id || idx} className="p-4 border rounded-lg bg-gray-50">
+        {/* Registered Classes Section */}
+        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">My Registered Classes</h2>
+          {registrations.length === 0 ? (
+            <p className="text-gray-500">You are not registered for any classes yet.</p>
+          ) : (
+            <ul className="space-y-4">
+              {registrations.map((reg, idx) => {
+                // Each registration contains a reference to the program via reg.programId
+                const cls = reg.programId;
+                return (
+                  <li key={reg._id || idx} className="p-4 border rounded-lg shadow-sm bg-gray-50">
                     <h3 className="text-lg font-semibold">
                       {cls.programName} ({cls.type})
                     </h3>
+                    <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
                     <p className="text-sm text-gray-600">
-                      First Class:{' '}
-                      {new Date(cls.startDate).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                      First Class:{" "}
+                      {new Date(cls.startDate).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
                       })}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Last Class:{' '}
-                      {new Date(cls.endDate).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                      Last Class:{" "}
+                      {new Date(cls.endDate).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
                       })}
                     </p>
                     <p className="text-sm text-gray-600">Location: {cls.location}</p>
+                    {/* Display full day names for availableDays */}
+                    {cls.availableDays && cls.availableDays.length > 0 && (
+                      <p className="text-sm text-gray-600">
+                        Occurs on:{" "}
+                        {cls.availableDays
+                          .map((dayAbbr) => dayMap[dayAbbr] || dayAbbr)
+                          .join(", ")}{" "}
+                        ({cls.availableDays.length} {cls.availableDays.length > 1 ? 'days' : 'day'} per week)
+                      </p>
+                    )}
                   </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500">No classes available.</p>
-            )}
-          </div>
-
-          {/* Notifications Section */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Notifications</h2>
-            {notifications.length > 0 ? (
-              <ul className="space-y-2">
-                {notifications.map((note, idx) => (
-                  <li key={idx} className="border p-2 rounded">
-                    {note.message}
-                    <span className="text-xs text-gray-500 ml-2">
-                      {new Date(note.date).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No notifications at this time.</p>
-            )}
-          </div>
+                );
+              })}
+            </ul>
+          )}
         </div>
 
-        {/* Calendar Modal */}
-        {showCalendar && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-6 relative">
-              <button
-                onClick={() => setShowCalendar(false)}
-                className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-              >
-                &times;
-              </button>
-              <ClassCalendar />
-            </div>
-          </div>
-        )}
+        {/* Notifications Section */}
+        <div className="bg-white shadow-md rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-4">Notifications</h2>
+          {notifications.length === 0 ? (
+            <p className="text-gray-500">No notifications at this time.</p>
+          ) : (
+            <ul className="space-y-2">
+              {notifications.map((note, idx) => (
+                <li key={idx} className="border p-2 rounded">
+                  {note.message}
+                  <span className="text-xs text-gray-500 ml-2">
+                    {new Date(note.date).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );

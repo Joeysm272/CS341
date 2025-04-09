@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 
 const StaffHome = () => {
   const [classes, setClasses] = useState([]);
+  const [allRegistrations, setAllRegistrations] = useState([]); // new state for all registrations
   const [formData, setFormData] = useState({
     programName: '',
     type: '',
@@ -21,59 +22,6 @@ const StaffHome = () => {
   });
   const [editIndex, setEditIndex] = useState(null);
 
-  // Transform stored date and time fields to proper formats for the form
-  const handleEdit = (index) => {
-    const classToEdit = classes[index];
-
-    // Convert ISO date strings to "YYYY-MM-DD" format for date input fields
-    let startDateFormatted = '';
-    let endDateFormatted = '';
-
-    if (classToEdit.startDate) {
-      // Split the ISO string at 'T' and take the first part
-      startDateFormatted = new Date(classToEdit.startDate).toISOString().split('T')[0];
-    }
-    if (classToEdit.endDate) {
-      endDateFormatted = new Date(classToEdit.endDate).toISOString().split('T')[0];
-    }
-
-    // For time fields, assuming they are stored as valid "HH:mm" strings in the document
-    // Otherwise, you might need to extract the time portion from a datetime string.
-    const startTime = classToEdit.startTime || '';
-    const endTime = classToEdit.endTime || '';
-
-    setFormData({
-      ...classToEdit,
-      startDate: startDateFormatted,
-      endDate: endDateFormatted,
-      startTime,
-      endTime,
-    });
-    setEditIndex(index);
-  };
-
-  // Handle general field changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Handle changes for availableDays checkboxes
-  const handleAvailableDaysChange = (e) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setFormData(prev => ({
-        ...prev,
-        availableDays: [...prev.availableDays, value]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        availableDays: prev.availableDays.filter(day => day !== value)
-      }));
-    }
-  };
-
   // Helper function to compute duration between two "HH:mm" strings
   const computeDuration = (start, end) => {
     if (!start || !end) return '';
@@ -89,12 +37,59 @@ const StaffHome = () => {
     return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
   };
 
-  // Handle form submission - post data then update local state
+  // Transform stored date and time fields to proper formats for the form when editing
+  const handleEdit = (index) => {
+    const classToEdit = classes[index];
+    let startDateFormatted = '';
+    let endDateFormatted = '';
+
+    if (classToEdit.startDate) {
+      startDateFormatted = new Date(classToEdit.startDate).toISOString().split('T')[0];
+    }
+    if (classToEdit.endDate) {
+      endDateFormatted = new Date(classToEdit.endDate).toISOString().split('T')[0];
+    }
+
+    const startTime = classToEdit.startTime || '';
+    const endTime = classToEdit.endTime || '';
+
+    setFormData({
+      ...classToEdit,
+      startDate: startDateFormatted,
+      endDate: endDateFormatted,
+      startTime,
+      endTime,
+    });
+    setEditIndex(index);
+  };
+
+  // Handle form field changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle availableDays checkboxes
+  const handleAvailableDaysChange = (e) => {
+    const { value, checked } = e.target;
+    if (checked) {
+      setFormData(prev => ({
+        ...prev,
+        availableDays: [...prev.availableDays, value]
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        availableDays: prev.availableDays.filter(day => day !== value)
+      }));
+    }
+  };
+
+  // Handle form submission (POST to backend and update local state)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // POST the formData to your backend
       const res = await fetch('http://localhost:8000/programs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -115,7 +110,7 @@ const StaffHome = () => {
       console.error('Error posting class:', error);
     }
 
-    // Reset the form fields
+    // Reset the form
     setFormData({
       programName: '',
       type: '',
@@ -134,7 +129,7 @@ const StaffHome = () => {
     });
   };
 
-  // Fetch existing classes from the backend
+  // Fetch existing programs from the backend
   useEffect(() => {
     const getPrograms = async () => {
       try {
@@ -149,10 +144,36 @@ const StaffHome = () => {
     getPrograms();
   }, []);
 
+  // Fetch all registrations (for displaying participants)
+  useEffect(() => {
+    const fetchAllRegistrations = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/registrations");
+        if (!res.ok) throw new Error("Failed to fetch registrations");
+        const data = await res.json();
+        setAllRegistrations(data);
+      } catch (err) {
+        console.error("Error fetching all registrations:", err);
+      }
+    };
+    fetchAllRegistrations();
+  }, []);
+
+  // Mapping for full day names
+  const dayMap = {
+    SU: 'Sunday',
+    MO: 'Monday',
+    TU: 'Tuesday',
+    WE: 'Wednesday',
+    TH: 'Thursday',
+    FR: 'Friday',
+    SA: 'Saturday'
+  };
+
   return (
     <div className="bg-gray-100">
       <Navbar />
-      <div>
+      <div className="max-w-4xl mx-auto p-6">
         <header className="bg-teal-600 text-white p-4 text-center text-2xl font-bold">
           YMCA Staff Portal
         </header>
@@ -357,123 +378,96 @@ const StaffHome = () => {
             <p className="text-gray-500">No classes created yet.</p>
           ) : (
             <ul className="space-y-4">
-              {classes.map((cls, index) => (
-                <li
-                  key={index}
-                  className="p-4 border rounded-lg shadow-sm bg-gray-50 flex flex-col md:flex-row justify-between gap-6"
-                >
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold">
-                      {cls.programName} ({cls.type})
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Instructor: {cls.instructor}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      First Class:{' '}
-                      {new Date(cls.startDate).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                      })}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Last Class:{' '}
-                      {new Date(cls.endDate).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                      })}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Start Time: {cls.startTime}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      End Time: {cls.endTime}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Location: {cls.location}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Capacity: {cls.capacity}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Member Price: ${cls.memberPrice}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Non-Member Price: ${cls.nonMemberPrice}
-                    </p>
-                    <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
-                    {/* Display duration */}
-                    {cls.startTime && cls.endTime && (
+              {classes.map((cls, index) => {
+                // For each class, filter registrations to get enrolled participants
+                const participants = allRegistrations.filter(
+                  (reg) => reg.programId && reg.programId._id.toString() === cls._id.toString()
+                );
+                return (
+                  <li
+                    key={index}
+                    className="p-4 border rounded-lg shadow-sm bg-gray-50 flex flex-col md:flex-row justify-between gap-6"
+                  >
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold">
+                        {cls.programName} ({cls.type})
+                      </h3>
+                      <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
                       <p className="text-sm text-gray-600">
-                        Duration: {cls.startTime} - {cls.endTime} (
-                        {
-                          (() => {
-                            const computeDuration = (start, end) => {
-                              const [sH, sM] = start.split(':').map(Number);
-                              const [eH, eM] = end.split(':').map(Number);
-                              let sDate = new Date(0, 0, 0, sH, sM);
-                              let eDate = new Date(0, 0, 0, eH, eM);
-                              let diff = eDate - sDate;
-                              if (diff < 0) diff += 24 * 60 * 60 * 1000;
-                              const totalMins = Math.floor(diff / 60000);
-                              const hours = Math.floor(totalMins / 60);
-                              const minutes = totalMins % 60;
-                              return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
-                            };
-                            return computeDuration(cls.startTime, cls.endTime);
-                          })()
-                        })
+                        First Class:{' '}
+                        {new Date(cls.startDate).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                        })}
                       </p>
-                    )}
-                    {/* Display available days (if any) */}
-                    {cls.availableDays && cls.availableDays.length > 0 && (
                       <p className="text-sm text-gray-600">
-                        Occurs on: {cls.availableDays.join(', ')} (
-                        {cls.availableDays.length} day{cls.availableDays.length > 1 ? 's' : ''} per week)
+                        Last Class:{' '}
+                        {new Date(cls.endDate).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                        })}
                       </p>
-                    )}
-                    {/* Enrollment Counter */}
-                    <p className="text-sm font-bold text-green-600">
-                      Enrolled: {cls.enrolled} / {cls.capacity}
-                    </p>
-                    <div className="flex space-x-2 mt-3">
-                      <button
-                        onClick={() => handleEdit(index)}
-                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => {
-                          deleteProgram(classes[index]._id);
-                          handleDelete(index);
-                        }}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
+                      <p className="text-sm text-gray-600">Location: {cls.location}</p>
+                      <p className="text-sm text-gray-600">Capacity: {cls.capacity}</p>
+                      <p className="text-sm text-gray-600">Member Price: ${cls.memberPrice}</p>
+                      <p className="text-sm text-gray-600">Non-Member Price: ${cls.nonMemberPrice}</p>
+                      <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
+                      {cls.startTime && cls.endTime && (
+                        <p className="text-sm text-gray-600">
+                          Duration: {cls.startTime} - {cls.endTime} (
+                          {
+                            (() => {
+                              const computeDuration = (start, end) => {
+                                const [sH, sM] = start.split(':').map(Number);
+                                const [eH, eM] = end.split(':').map(Number);
+                                let sDate = new Date(0, 0, 0, sH, sM);
+                                let eDate = new Date(0, 0, 0, eH, eM);
+                                let diff = eDate - sDate;
+                                if (diff < 0) diff += 24 * 60 * 60 * 1000;
+                                const totalMins = Math.floor(diff / 60000);
+                                const hours = Math.floor(totalMins / 60);
+                                const minutes = totalMins % 60;
+                                return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+                              };
+                              return computeDuration(cls.startTime, cls.endTime);
+                            })()
+                          })
+                        </p>
+                      )}
+                      {cls.availableDays && cls.availableDays.length > 0 && (
+                        <p className="text-sm text-gray-600">
+                          Occurs on:{" "}
+                          {cls.availableDays
+                            .map((dayAbbr) => dayMap[dayAbbr] || dayAbbr)
+                            .join(", ")}{" "}
+                          ({cls.availableDays.length} {cls.availableDays.length > 1 ? 'days' : 'day'} per week)
+                        </p>
+                      )}
+                      <p className="text-sm font-bold text-green-600">
+                        Enrolled: {cls.enrolled} / {cls.capacity}
+                      </p>
                     </div>
-                  </div>
-                  <div className="mt-4">
-                    <h4 className="font-semibold text-gray-700 mb-2">
-                      Enrolled Participants
-                    </h4>
-                    <input
-                      type="text"
-                      placeholder="Search participants..."
-                      className="w-full p-2 border border-gray-300 rounded mb-3"
-                    />
-                    <ul className="space-y-1 max-h-32 overflow-y-auto">
-                      {/* Optionally list participants here */}
-                    </ul>
-                    <p className="text-sm text-gray-400">
-                      No participants yet.
-                    </p>
-                  </div>
-                </li>
-              ))}
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-gray-700 mb-2">
+                        Enrolled Participants
+                      </h4>
+                      {participants.length > 0 ? (
+                        <ul className="space-y-1">
+                          {participants.map((reg) => (
+                            <li key={reg._id} className="text-sm">
+                              {reg.memberId.firstName} {reg.memberId.lastName}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-400">No participants yet.</p>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

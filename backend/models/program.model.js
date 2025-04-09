@@ -7,6 +7,8 @@ const programSchema = new Schema({
     instructor: {type: String},
     startDate: {type: String},
     endDate: {type: String},
+    startTime: {type: String},
+    endTime: {type: String},
     availableDays: {
         type: [String],
         enum: ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'],
