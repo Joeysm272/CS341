@@ -9,82 +9,121 @@ const StaffHome = () => {
     instructor: '',
     startDate: '',
     endDate: '',
-    availableDays: [], // Holds selected days, e.g. ['MO', 'WE', 'FR']
+    startTime: '',       // e.g., "08:00"
+    endTime: '',         // e.g., "09:30"
+    availableDays: [],   // e.g. ['MO', 'WE', 'FR']
     location: '',
     capacity: '',
     memberPrice: '',
     nonMemberPrice: '',
     desc: '',
-    enrolled: 0, // Track enrollments
+    enrolled: 0,
   });
-
   const [editIndex, setEditIndex] = useState(null);
 
-  // Handle changes for text, number, and date fields
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // Transform stored date and time fields to proper formats for the form
+  const handleEdit = (index) => {
+    const classToEdit = classes[index];
+
+    // Convert ISO date strings to "YYYY-MM-DD" format for date input fields
+    let startDateFormatted = '';
+    let endDateFormatted = '';
+
+    if (classToEdit.startDate) {
+      // Split the ISO string at 'T' and take the first part
+      startDateFormatted = new Date(classToEdit.startDate).toISOString().split('T')[0];
+    }
+    if (classToEdit.endDate) {
+      endDateFormatted = new Date(classToEdit.endDate).toISOString().split('T')[0];
+    }
+
+    // For time fields, assuming they are stored as valid "HH:mm" strings in the document
+    // Otherwise, you might need to extract the time portion from a datetime string.
+    const startTime = classToEdit.startTime || '';
+    const endTime = classToEdit.endTime || '';
+
+    setFormData({
+      ...classToEdit,
+      startDate: startDateFormatted,
+      endDate: endDateFormatted,
+      startTime,
+      endTime,
+    });
+    setEditIndex(index);
   };
 
-  // Handle changes for the availableDays checkboxes
+  // Handle general field changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle changes for availableDays checkboxes
   const handleAvailableDaysChange = (e) => {
     const { value, checked } = e.target;
     if (checked) {
-      // Add the value if not already present
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
-        availableDays: [...prev.availableDays, value],
+        availableDays: [...prev.availableDays, value]
       }));
     } else {
-      // Remove the value if unchecked
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
-        availableDays: prev.availableDays.filter((day) => day !== value),
+        availableDays: prev.availableDays.filter(day => day !== value)
       }));
     }
   };
 
-  // Handle form submission – POST to backend then update local state
+  // Helper function to compute duration between two "HH:mm" strings
+  const computeDuration = (start, end) => {
+    if (!start || !end) return '';
+    const [startH, startM] = start.split(':').map(Number);
+    const [endH, endM] = end.split(':').map(Number);
+    let startDateObj = new Date(0, 0, 0, startH, startM);
+    let endDateObj = new Date(0, 0, 0, endH, endM);
+    let diff = endDateObj - startDateObj;
+    if (diff < 0) diff += 24 * 60 * 60 * 1000;
+    const totalMinutes = Math.floor(diff / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+  };
+
+  // Handle form submission - post data then update local state
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Post the formData to the backend
+      // POST the formData to your backend
       const res = await fetch('http://localhost:8000/programs', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-
-      if (!res.ok) {
-        throw new Error('Failed to create class on the backend');
-      }
-
-      // Assume the backend returns the created class document (which may include additional fields like _id)
+      if (!res.ok) throw new Error('Failed to create class');
       const postedData = await res.json();
 
-      // Update the classes state with the new class returned from the server
       if (editIndex !== null) {
         const updatedClasses = [...classes];
         updatedClasses[editIndex] = postedData;
         setClasses(updatedClasses);
         setEditIndex(null);
       } else {
-        setClasses((prev) => [...prev, postedData]);
+        setClasses(prev => [...prev, postedData]);
       }
     } catch (error) {
       console.error('Error posting class:', error);
     }
 
-    // Reset the form after submitting
+    // Reset the form fields
     setFormData({
       programName: '',
       type: '',
       instructor: '',
       startDate: '',
       endDate: '',
+      startTime: '',
+      endTime: '',
       availableDays: [],
       location: '',
       capacity: '',
@@ -107,7 +146,6 @@ const StaffHome = () => {
         console.error('Error fetching classes:', error);
       }
     };
-
     getPrograms();
   }, []);
 
@@ -156,38 +194,80 @@ const StaffHome = () => {
               className="border p-2 rounded"
               required
             />
-            <div>
-              <label htmlFor="startDate" style={{ marginRight: '8px' }}>
-                Start Date:
-              </label>
-              <input
-                id="startDate"
-                type="datetime-local"
-                name="startDate"
-                value={formData.startDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, startDate: e.target.value })
-                }
-                min={new Date().toISOString().slice(0, 16)}
-                required
-              />
+
+            {/* Date Fields (Side-by-Side) */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+                  Start Date:
+                </label>
+                <input
+                  id="startDate"
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
+                  End Date:
+                </label>
+                <input
+                  id="endDate"
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  min={formData.startDate || new Date().toISOString().slice(0, 10)}
+                  className="border p-2 rounded w-full"
+                  required
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="endDate" style={{ marginRight: '15px' }}>
-                End Date:
-              </label>
-              <input
-                id="endDate"
-                type="datetime-local"
-                name="endDate"
-                value={formData.endDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, endDate: e.target.value })
-                }
-                min={formData.startDate || new Date().toISOString().slice(0, 16)}
-                required
-              />
+
+            {/* Time Fields (Side-by-Side) */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
+                  Start Time:
+                </label>
+                <input
+                  id="startTime"
+                  type="time"
+                  name="startTime"
+                  value={formData.startTime}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
+                  End Time:
+                </label>
+                <input
+                  id="endTime"
+                  type="time"
+                  name="endTime"
+                  value={formData.endTime}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  required
+                />
+              </div>
             </div>
+
+            {/* Duration Display */}
+            {formData.startTime && formData.endTime && (
+              <p className="text-sm text-gray-600">
+                Duration: {formData.startTime} - {formData.endTime} (
+                {computeDuration(formData.startTime, formData.endTime)})
+              </p>
+            )}
+
             <input
               type="text"
               name="location"
@@ -295,8 +375,6 @@ const StaffHome = () => {
                         year: 'numeric',
                         month: '2-digit',
                         day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
                       })}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -305,9 +383,13 @@ const StaffHome = () => {
                         year: 'numeric',
                         month: '2-digit',
                         day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
                       })}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Start Time: {cls.startTime}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      End Time: {cls.endTime}
                     </p>
                     <p className="text-sm text-gray-600">
                       Location: {cls.location}
@@ -322,6 +404,29 @@ const StaffHome = () => {
                       Non-Member Price: ${cls.nonMemberPrice}
                     </p>
                     <p className="text-sm text-gray-700 mt-2">{cls.desc}</p>
+                    {/* Display duration */}
+                    {cls.startTime && cls.endTime && (
+                      <p className="text-sm text-gray-600">
+                        Duration: {cls.startTime} - {cls.endTime} (
+                        {
+                          (() => {
+                            const computeDuration = (start, end) => {
+                              const [sH, sM] = start.split(':').map(Number);
+                              const [eH, eM] = end.split(':').map(Number);
+                              let sDate = new Date(0, 0, 0, sH, sM);
+                              let eDate = new Date(0, 0, 0, eH, eM);
+                              let diff = eDate - sDate;
+                              if (diff < 0) diff += 24 * 60 * 60 * 1000;
+                              const totalMins = Math.floor(diff / 60000);
+                              const hours = Math.floor(totalMins / 60);
+                              const minutes = totalMins % 60;
+                              return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+                            };
+                            return computeDuration(cls.startTime, cls.endTime);
+                          })()
+                        })
+                      </p>
+                    )}
                     {/* Display available days (if any) */}
                     {cls.availableDays && cls.availableDays.length > 0 && (
                       <p className="text-sm text-gray-600">
