@@ -235,6 +235,24 @@ const StaffHome = () => {
     const [year, month, day] = dateStr.split('-');
     return `${month}/${day}/${year}`; // Returns MM/DD/YYYY format
   };
+
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchPopup, setShowSearchPopup] = useState(false);
+
+  const handleMemberSearch = () => {
+    // Convert search query to lower case for case-insensitive matching
+    const query = memberSearchQuery.toLowerCase();
+    const results = allRegistrations.filter((reg) => {
+      if (reg.memberId && reg.memberId.firstName && reg.memberId.lastName) {
+        const fullName = `${reg.memberId.firstName} ${reg.memberId.lastName}`.toLowerCase();
+        return fullName.includes(query);
+      }
+      return false;
+    });
+    setSearchResults(results);
+    setShowSearchPopup(true);
+  };
   
 
   return (
@@ -244,6 +262,53 @@ const StaffHome = () => {
         <header className="bg-teal-600 text-white p-4 text-center text-2xl font-bold">
           YMCA Staff Portal
         </header>
+        {/* Member Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search member by name"
+            value={memberSearchQuery}
+            onChange={(e) => setMemberSearchQuery(e.target.value)}
+            className="border p-2 rounded mr-2 w-2/3"
+          />
+          <button
+            onClick={handleMemberSearch}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Search Member
+          </button>
+        </div>
+
+        {/* Member Search Popup */}
+        {showSearchPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 md:w-1/2">
+              <h2 className="text-xl font-semibold mb-4">Search Results</h2>
+              {searchResults.length === 0 ? (
+                <p>No registrations found for "{memberSearchQuery}".</p>
+              ) : (
+                <ul className="space-y-2">
+                  {searchResults.map((reg) => (
+                    <li key={reg._id} className="border p-2 rounded">
+                      <p className="font-semibold">
+                        {reg.memberId.firstName} {reg.memberId.lastName}
+                      </p>
+                      <p>
+                        {reg.programId.programName} ({reg.programId.type})
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button
+                onClick={() => setShowSearchPopup(false)}
+                className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Form for Creating / Editing Classes */}
         <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded-lg shadow-md">
