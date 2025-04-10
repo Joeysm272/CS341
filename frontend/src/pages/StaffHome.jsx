@@ -230,6 +230,13 @@ const StaffHome = () => {
     }
   };
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    return `${month}/${day}/${year}`; // Returns MM/DD/YYYY format
+  };
+  
+
   return (
     <div className="bg-gray-100">
       <Navbar />
@@ -454,20 +461,10 @@ const StaffHome = () => {
                       </h3>
                       <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
                       <p className="text-sm text-gray-600">
-                        First Class:{' '}
-                        {new Date(cls.startDate).toLocaleString('en-US', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                        })}
+                        First Class: {formatDate(cls.startDate)}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Last Class:{' '}
-                        {new Date(cls.endDate).toLocaleString('en-US', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                        })}
+                        Last Class: {formatDate(cls.endDate)}
                       </p>
                       <p className="text-sm text-gray-600">Location: {cls.location}</p>
                       <p className="text-sm text-gray-600">Capacity: {cls.capacity}</p>

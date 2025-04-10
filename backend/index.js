@@ -203,7 +203,7 @@ app.get("/registrations", async (req, res) => {
   try {
     const registrations = await Registration.find()
       .populate("memberId", "firstName lastName email")
-      .populate("programId", "programName type startDate endDate location");
+      .populate("programId", "programName type startDate endDate startTime endTime location");
     res.json(registrations);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch registrations" });
@@ -220,7 +220,7 @@ app.get("/registrations/my-registrations/:memberId", async (req, res) => {
     console.log("Converted memberId:", validMemberId);
 
     const registrations = await Registration.find({ memberId: validMemberId })
-      .populate("programId", "programName type instructor startDate endDate location capacity memberPrice nonMemberPrice desc enrolled availableDays cancelled");
+      .populate("programId", "programName type instructor startDate endDate startTime endTime location capacity memberPrice nonMemberPrice desc enrolled availableDays cancelled");
     
     console.log("Fetched registrations for member", memberId, ":", registrations);
     res.json(registrations);

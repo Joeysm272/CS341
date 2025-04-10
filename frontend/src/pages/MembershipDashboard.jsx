@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 
-const dayMap = {
-  SU: 'Sunday',
-  MO: 'Monday',
-  TU: 'Tuesday',
-  WE: 'Wednesday',
-  TH: 'Thursday',
-  FR: 'Friday',
-  SA: 'Saturday'
-};
-
 const MembershipDashboard = () => {
-
+  // Retrieve user info from localStorage
   const [user] = useState(() => ({
     userId: localStorage.getItem('userId'),
     firstName: localStorage.getItem('firstName'),
@@ -27,13 +17,23 @@ const MembershipDashboard = () => {
     email: user.email || 'johndoe@example.com'
   });
 
-  // State to hold the user's registrations (if needed)
+  // State to hold the user's registrations
   const [registrations, setRegistrations] = useState([]);
-
   // State for notifications
   const [notifications, setNotifications] = useState([]);
 
-  // Fetch the registered classes for the current user (if needed)
+  // Mapping for full day names
+  const dayMap = {
+    SU: 'Sunday',
+    MO: 'Monday',
+    TU: 'Tuesday',
+    WE: 'Wednesday',
+    TH: 'Thursday',
+    FR: 'Friday',
+    SA: 'Saturday'
+  };
+
+  // Fetch the registered classes for the current user
   useEffect(() => {
     const getMyRegistrations = async () => {
       if (!user.userId) return;
@@ -64,6 +64,32 @@ const MembershipDashboard = () => {
     };
     getNotifications();
   }, [user.userId]);
+
+  // Helper function to format a date string "YYYY-MM-DD" into "MM/DD/YYYY"
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  return `${parts[1]}/${parts[2]}/${parts[0]}`; // Format: MM/DD/YYYY
+};
+
+// Helper function to convert 24-hour time "HH:mm" to 12-hour format "h:mm AM/PM"
+const convertTo12Hour = (timeStr) => {
+  if (!timeStr) return '';
+  const [hourStr, minuteStr] = timeStr.split(':');
+  let hour = parseInt(hourStr, 10);
+  const minute = minuteStr;
+  let period = 'AM';
+  if (hour === 0) {
+    hour = 12;
+  } else if (hour === 12) {
+    period = 'PM';
+  } else if (hour > 12) {
+    hour -= 12;
+    period = 'PM';
+  }
+  return `${hour}:${minute} ${period}`;
+};
 
   return (
     <div className="bg-gray-100">
@@ -100,22 +126,33 @@ const MembershipDashboard = () => {
                     </h3>
                     <p className="text-sm text-gray-600">Instructor: {cls.instructor}</p>
                     <p className="text-sm text-gray-600">
-                      First Class:{' '}
-                      {new Date(cls.startDate).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                      })}
+                      First Class: {formatDate(cls.startDate)}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Last Class:{' '}
-                      {new Date(cls.endDate).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                      })}
+                      Last Class: {formatDate(cls.endDate)}
                     </p>
                     <p className="text-sm text-gray-600">Location: {cls.location}</p>
+                    {cls.startTime && cls.endTime && (
+                    <p className="text-sm text-gray-600">
+                      Time: {convertTo12Hour(cls.startTime)} - {convertTo12Hour(cls.endTime)} (
+                      {(() => {
+                        const computeDuration = (start, end) => {
+                          const [sH, sM] = start.split(':').map(Number);
+                          const [eH, eM] = end.split(':').map(Number);
+                          let sDate = new Date(0, 0, 0, sH, sM);
+                          let eDate = new Date(0, 0, 0, eH, eM);
+                          let diff = eDate - sDate;
+                          if (diff < 0) diff += 24 * 60 * 60 * 1000;
+                          const totalMins = Math.floor(diff / 60000);
+                          const hours = Math.floor(totalMins / 60);
+                          const minutes = totalMins % 60;
+                          return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+                        };
+                        return computeDuration(cls.startTime, cls.endTime);
+                      })()}
+                      )
+                    </p>
+                  )}
                     {cls.availableDays && cls.availableDays.length > 0 && (
                       <p className="text-sm text-gray-600">
                         Occurs on:{' '}
