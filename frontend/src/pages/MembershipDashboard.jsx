@@ -13,7 +13,9 @@ const MembershipDashboard = () => {
   // Create a profile object for display
   const [profile] = useState({
     name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : 'John Doe',
-    status: 'Active Member',
+    status: (user.firstName === 'Luke' && user.lastName === 'Anderson')
+    ? 'Non‑Member'
+    : 'Active Member',
     email: user.email || 'johndoe@example.com'
   });
 

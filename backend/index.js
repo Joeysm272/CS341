@@ -3,6 +3,7 @@ const cors = require("cors");
 const path = require("path");
 const mongoose = require("mongoose");
 const config = require('./config.json');
+const bcrypt = require('bcrypt');
 
 // Import models
 const Program = require('./models/program.model');
@@ -135,33 +136,64 @@ app.delete("/programs/:id", async (req, res) => {
 // ---- User Endpoints ----
 
 // Sign-up
+
+const saltRounds = 10; // cost factor, adjust this value as needed
+
 app.post("/sign-up", async (req, res) => {
-  const { username, password, firstName, lastName, email, phone } = req.body;
-  if (!username || !password) {
-    return res.json({ message: "No user" });
-  }
   try {
-    const user = new User({ username, password, firstName, lastName, email, phone });
+    const { username, password, firstName, lastName, email, phone } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ message: "Username and password are required" });
+    }
+    
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const user = new User({
+      username,
+      password: hashedPassword,  // Store the hash, not the plain text password.
+      firstName,
+      lastName,
+      email,
+      phone
+    });
     await user.save();
-    res.json(user);
+    res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
+    console.error("Error during sign-up:", error);
     res.status(500).json({ error: "Failed to sign up user" });
   }
 });
 
+
 // Login
+
 app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
   try {
+    const { username, password } = req.body;
     const user = await User.findOne({ username });
-    if (!user || user.password !== password) {
-      return res.status(400).json(null);
+    if (!user) {
+      console.log("User not found:", username);
+      return res.status(400).json({ error: "User not found" });
     }
+    
+    // Compare the provided password with the stored hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log(`Password valid for ${username}?`, isPasswordValid);
+    
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: "Invalid password" });
+    }
+    
     res.status(200).json(user);
   } catch (error) {
+    console.error("Error during login:", error);
     res.status(500).json({ error: "Failed to log in" });
   }
 });
+
+
+
 
 // Get user by ID
 app.get("/users/:id", async (req, res) => {
