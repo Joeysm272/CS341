@@ -32,6 +32,11 @@ const userSchema = new Schema({
             match: [/^\+?[0-9\- ]+$/, "Invalid phone number format"]
     },
     family:[familyMemberSchema],
+
+    active: {
+        type: Boolean,
+        default: true
+      }
 });
 
 module.exports = mongoose.model('users', userSchema);

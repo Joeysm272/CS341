@@ -172,7 +172,7 @@ app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
-    if (!user) {
+    if (!user || !user.active) {
       console.log("User not found:", username);
       return res.status(400).json({ error: "User not found" });
     }

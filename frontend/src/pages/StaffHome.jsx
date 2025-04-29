@@ -359,6 +359,7 @@ const StaffHome = () => {
                   type="date"
                   name="startDate"
                   value={formData.startDate}
+                  min={new Date().toISOString().split("T")[0]}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
                   required
