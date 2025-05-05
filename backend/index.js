@@ -228,6 +228,33 @@ app.patch("/users/:id", async (req, res) => {
   }
 });
 
+// ---- DELETE /users/:id (deactivate user + cancel their registrations) ----
+app.delete('/users/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // 1) Mark the user inactive
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { active: false },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // 2) Cancel all their registrations
+    await Registration.updateMany(
+      { memberId: userId },
+      { cancelled: true }
+    );
+
+    res.json({ message: 'User deactivated and registrations cancelled.' });
+  } catch (err) {
+    console.error("Error deactivating user:", err);
+    res.status(500).json({ error: 'Failed to deactivate user' });
+  }
+});
+
+
 // ---- Registration Endpoints ----
 
 // GET all registrations (with populated member and program details)
