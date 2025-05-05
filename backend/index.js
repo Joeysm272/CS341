@@ -395,6 +395,28 @@ app.get('/notifications/:userId', async (req, res) => {
   }
 });
 
+// GET /reports/registrations?start=YYYY-MM-DD&end=YYYY-MM-DD
+app.get('/reports/registrations', async (req, res) => {
+  const { start, end } = req.query;
+  if (!start || !end) return res.status(400).json({ error: 'Missing dates' });
+  try {
+    const regs = await Registration.find({
+      registrationDate: {
+        $gte: new Date(start),
+        $lte: new Date(end + 'T23:59:59')
+      }
+    })
+      .populate('memberId', 'firstName lastName')
+      .populate('programId', 'programName type startDate endDate')
+      .exec();
+    res.json(regs);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch report' });
+  }
+});
+
+
 
 app.listen(8000, () => console.log("Server listening on port 8000"));
 

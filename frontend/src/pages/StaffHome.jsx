@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import ReportFilters from '../components/ReportFilters';
+import RegistrationReportTable from '../components/RegistrationReportTable';
+
 
 const StaffHome = () => {
   // — Programs & registrations —
@@ -30,6 +33,15 @@ const StaffHome = () => {
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchPopup, setShowSearchPopup] = useState(false);
+
+// — Report (Jan–Jun 2025) —
+const [reportRange, setReportRange] = useState({
+    startDate: '2025-01-01',
+    endDate:   '2025-06-30'
+});
+const [reportData, setReportData] = useState([]);  
+const [reportLoading, setReportLoading] = useState(false);
+const [reportError, setReportError]     = useState('');
 
   // Day‐name mapping
   const dayMap = {
@@ -84,6 +96,29 @@ const StaffHome = () => {
       .then(setClasses)
       .catch(console.error);
   }, [allRegistrations]);
+
+  // Fetch registrations report whenever range changes
+useEffect(() => {
+  const fetchReport = async () => {
+      setReportLoading(true);
+      setReportError('');
+      try {
+        const { startDate, endDate } = reportRange;
+        const res = await fetch(
+          `http://localhost:8000/reports/registrations?start=${startDate}&end=${endDate}`
+        );
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+        const json = await res.json();
+        setReportData(json);
+      } catch (err) {
+        console.error(err);
+        setReportError('Failed to load report.');
+      } finally {
+        setReportLoading(false);
+      }
+    };
+    fetchReport();
+  }, [reportRange]);
 
   // Create or Update program
   const handleSubmit = async e => {
@@ -258,6 +293,27 @@ const StaffHome = () => {
             </div>
           </div>
         )}
+
+        {/* 📊 Jan–Jun 2025 Registrations Report */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h2 className="text-xl font-semibold mb-4">
+            Registrations Report
+          </h2>
+
+          <ReportFilters
+            startDate={reportRange.startDate}
+            endDate={reportRange.endDate}
+            onChange={setReportRange}
+          />
+
+          {reportLoading && <p>Loading report…</p>}
+          {reportError   && <p className="text-red-600">{reportError}</p>}
+
+          {!reportLoading && !reportError && (
+            <RegistrationReportTable data={reportData} />
+          )}
+        </div>
+
 
         {/* ➕ Create / Edit Class */}
         <div className="bg-white p-6 rounded-lg shadow mb-6">
