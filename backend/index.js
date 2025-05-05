@@ -228,7 +228,7 @@ app.patch("/users/:id", async (req, res) => {
   }
 });
 
-// ---- DELETE /users/:id (deactivate user + cancel their registrations) ----
+// ---- DELETE /users/:id (deactivate user + delete their registrations) ----
 app.delete('/users/:id', async (req, res) => {
   try {
     const userId = req.params.id;
@@ -241,18 +241,16 @@ app.delete('/users/:id', async (req, res) => {
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // 2) Cancel all their registrations
-    await Registration.updateMany(
-      { memberId: userId },
-      { cancelled: true }
-    );
+    // 2) Delete all their registrations
+    await Registration.deleteMany({ memberId: userId });
 
-    res.json({ message: 'User deactivated and registrations cancelled.' });
+    res.json({ message: 'User deactivated and registrations deleted.' });
   } catch (err) {
     console.error("Error deactivating user:", err);
     res.status(500).json({ error: 'Failed to deactivate user' });
   }
 });
+
 
 
 // ---- Registration Endpoints ----
