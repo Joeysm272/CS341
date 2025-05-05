@@ -269,36 +269,103 @@ const StaffHome = () => {
 
         {/* Member Popup */}
         {showSearchPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 md:w-1/2">
+            <h2 className="text-xl font-semibold mb-4">
+              {searchResults.length
+                ? `Member: ${searchResults[0].memberId.firstName} ${searchResults[0].memberId.lastName}`
+                : `No member found for “${memberSearchQuery}”`}
+            </h2>
+
+            {searchResults.length > 0 && (
+              <>
+                <ul className="space-y-2 max-h-64 overflow-y-auto mb-4">
+                  {searchResults.map(reg => (
+                    <li key={reg._id} className="border p-3 rounded">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold">{reg.programId.programName}</span>
+                        {reg.programId.cancelled && (
+                          <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs">
+                            Cancelled
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {formatDate(reg.programId.startDate)} – {formatDate(reg.programId.endDate)}
+                        <br />
+                        {convertTo12Hour(reg.programId.startTime)} – {convertTo12Hour(reg.programId.endTime)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={deactivateMember}
+                  className="mb-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Deactivate Member
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={() => setShowSearchPopup(false)}
+              className="block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+
+        {/*  Class Search */}
+        <div className="my-6 flex gap-2">
+          <input
+            type="text"
+            placeholder="Search classes by name…"
+            value={classSearchQuery}
+            onChange={e => setClassSearchQuery(e.target.value)}
+            className="flex-1 border p-2 rounded"
+          />
+          <button
+            onClick={handleClassSearch}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Search Classes
+          </button>
+        </div>
+
+        {/* Class Search Popup */}
+        {showClassSearchPopup && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 md:w-1/2">
               <h2 className="text-xl font-semibold mb-4">
-                {searchResults.length
-                  ? `Member: ${searchResults[0].memberId.firstName} ${searchResults[0].memberId.lastName}`
-                  : `No member found for “${memberSearchQuery}”`}
+                {filteredClasses.length
+                  ? `Classes matching “${classSearchQuery}”`
+                  : `No classes found for “${classSearchQuery}”`}
               </h2>
-              {searchResults.length > 0 && (
-                <>
-                  <ul className="space-y-2 max-h-64 overflow-y-auto mb-4">
-                    {searchResults.map(reg => (
-                      <li key={reg._id} className="border p-2 rounded">
-                        <p className="font-semibold">{reg.programId.programName}</p>
-                        <p className="text-sm text-gray-600">
-                          {formatDate(reg.programId.startDate)} – {formatDate(reg.programId.endDate)}<br/>
-                          {convertTo12Hour(reg.programId.startTime)} – {convertTo12Hour(reg.programId.endTime)}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    onClick={deactivateMember}
-                    className="mb-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                  >
-                    Deactivate Member
-                  </button>
-                </>
+              {filteredClasses.length > 0 && (
+                <ul className="space-y-2 max-h-64 overflow-y-auto mb-4">
+                  {filteredClasses.map(c => (
+                    <li key={c._id} className="border p-2 rounded">
+                      <p className="font-semibold flex items-center">
+                        {c.programName} ({c.type})
+                        {c.cancelled && (
+                          <span className="ml-2 bg-red-500 text-white px-1 py-px rounded text-xs">
+                            Cancelled
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {formatDate(c.startDate)} – {formatDate(c.endDate)}<br/>
+                        {convertTo12Hour(c.startTime)} – {convertTo12Hour(c.endTime)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
               )}
               <button
-                onClick={() => setShowSearchPopup(false)}
+                onClick={() => setShowClassSearchPopup(false)}
                 className="block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
               >
                 Close
@@ -307,7 +374,7 @@ const StaffHome = () => {
           </div>
         )}
 
-        {/* 📊 Jan–Jun 2025 Registrations Report */}
+        {/* Registrations Report */}
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <h2 className="text-xl font-semibold mb-4">Registrations Report</h2>
           <ReportFilters
@@ -322,7 +389,7 @@ const StaffHome = () => {
           )}
         </div>
 
-        {/* ➕ Create / Edit Class */}
+        {/*  Create / Edit Class */}
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <h2 className="text-xl font-semibold mb-4">
             {editIndex !== null ? 'Edit Class' : 'Create a New Class'}
@@ -490,56 +557,9 @@ const StaffHome = () => {
           </form>
         </div>
 
-        {/* 🔍 Class Search */}
-        <div className="my-6 flex gap-2">
-          <input
-            type="text"
-            placeholder="Search classes by name…"
-            value={classSearchQuery}
-            onChange={e => setClassSearchQuery(e.target.value)}
-            className="flex-1 border p-2 rounded"
-          />
-          <button
-            onClick={handleClassSearch}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            Search Classes
-          </button>
-        </div>
+        {/*  Class Search Popup is above */}
 
-        {/* Class Search Popup */}
-        {showClassSearchPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 md:w-1/2">
-              <h2 className="text-xl font-semibold mb-4">
-                {filteredClasses.length
-                  ? `Classes matching “${classSearchQuery}”`
-                  : `No classes found for “${classSearchQuery}”`}
-              </h2>
-              {filteredClasses.length > 0 && (
-                <ul className="space-y-2 max-h-64 overflow-y-auto mb-4">
-                  {filteredClasses.map(c => (
-                    <li key={c._id} className="border p-2 rounded">
-                      <p className="font-semibold">{c.programName} ({c.type})</p>
-                      <p className="text-sm text-gray-600">
-                        {formatDate(c.startDate)} – {formatDate(c.endDate)}<br/>
-                        {convertTo12Hour(c.startTime)} – {convertTo12Hour(c.endTime)}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <button
-                onClick={() => setShowClassSearchPopup(false)}
-                className="block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 📋 Current Classes */}
+        {/*  Current Classes */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Current Classes</h2>
           {classes.length === 0 ? (
@@ -605,9 +625,7 @@ const StaffHome = () => {
                       )}
                       {/* Participant List */}
                       <div className="mt-4 w-full">
-                        <h4 className="font-semibold text-gray-700 mb-2">
-                          Enrolled Participants
-                        </h4>
+                        <h4 className="font-semibold text-gray-700 mb-2">Enrolled Participants</h4>
                         <input
                           type="text"
                           placeholder="Search participants..."
@@ -628,6 +646,7 @@ const StaffHome = () => {
             </ul>
           )}
         </div>
+
       </div>
     </div>
   );

@@ -262,7 +262,7 @@ app.get("/registrations", async (req, res) => {
   try {
     const registrations = await Registration.find()
       .populate("memberId", "firstName lastName email")
-      .populate("programId", "programName type startDate endDate startTime endTime location");
+      .populate("programId", "programName type startDate endDate startTime endTime location cancelled");
     res.json(registrations);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch registrations" });
