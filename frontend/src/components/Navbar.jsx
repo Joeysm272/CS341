@@ -7,7 +7,7 @@ const Navbar = () => {
 
   const userId   = localStorage.getItem('userId')
   const username = localStorage.getItem('username')
-  const role     = localStorage.getItem('role')  // <-- read role
+  const role     = localStorage.getItem('role')
 
   return (
     <div className='bg-white flex items-center justify-between px-6 py-2 drop-shadow'>

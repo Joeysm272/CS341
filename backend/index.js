@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 const Program = require('./models/program.model');
 const User = require('./models/users.model');
 const Registration = require('./models/Registration');
-const Notification = require('./models/Notifications'); // Ensure the file is named Notifications.js (or change to Notification if desired)
+const Notification = require('./models/Notifications');
 
 const app = express();
 
@@ -179,7 +179,6 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "User not found" });
     }
     
-    // Compare the provided password with the stored hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     console.log(`Password valid for ${username}?`, isPasswordValid);
     
@@ -235,15 +234,12 @@ app.delete('/users/:id', async (req, res) => {
   try {
     const userId = req.params.id;
 
-    // 1) Mark the user inactive
     const user = await User.findByIdAndUpdate(
       userId,
       { active: false },
       { new: true }
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
-
-    // 2) Delete all their registrations
     await Registration.deleteMany({ memberId: userId });
 
     res.json({ message: 'User deactivated and registrations deleted.' });
