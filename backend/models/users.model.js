@@ -31,6 +31,12 @@ const userSchema = new Schema({
     phone: {type: String,
             match: [/^\+?[0-9\- ]+$/, "Invalid phone number format"]
     },
+    role: {
+        type: String,
+        enum: ['member','staff'],
+        default: 'member'
+    },
+
     family:[familyMemberSchema],
 
     active: {

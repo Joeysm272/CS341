@@ -141,10 +141,11 @@ const saltRounds = 10; // cost factor, adjust this value as needed
 
 app.post("/sign-up", async (req, res) => {
   try {
-    const { username, password, firstName, lastName, email, phone } = req.body;
+    const { username, password, firstName, lastName, email, phone, role } = req.body;
     if (!username || !password) {
       return res.status(400).json({ message: "Username and password are required" });
     }
+    const userRole = role || 'member';
     
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -155,10 +156,11 @@ app.post("/sign-up", async (req, res) => {
       firstName,
       lastName,
       email,
-      phone
+      phone,
+      role: userRole
     });
     await user.save();
-    res.status(201).json({ message: "User registered successfully" });
+    res.status(201).json(user);
   } catch (error) {
     console.error("Error during sign-up:", error);
     res.status(500).json({ error: "Failed to sign up user" });

@@ -2,11 +2,11 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const RequireStaff = ({ children }) => {
-  // Retrieve the username directly from localStorage
-  const username = localStorage.getItem('username');
+  // Pull the role (not the username) out of localStorage
+  const role = localStorage.getItem('role');
 
-  // If the username is not "staff", redirect to the login page
-  if (username !== 'staff') {
+  // If they’re not staff, kick them back to home (or login)
+  if (role !== 'staff') {
     return <Navigate to="/" replace />;
   }
 

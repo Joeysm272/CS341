@@ -3,7 +3,6 @@ import Navbar from '../components/Navbar';
 import ReportFilters from '../components/ReportFilters';
 import RegistrationReportTable from '../components/RegistrationReportTable';
 
-
 const StaffHome = () => {
   // — Programs & registrations —
   const [classes, setClasses] = useState([]);
@@ -34,14 +33,19 @@ const StaffHome = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchPopup, setShowSearchPopup] = useState(false);
 
-// — Report (Jan–Jun 2025) —
-const [reportRange, setReportRange] = useState({
+  // — Class Search —
+  const [classSearchQuery, setClassSearchQuery] = useState('');
+  const [filteredClasses, setFilteredClasses] = useState([]);
+  const [showClassSearchPopup, setShowClassSearchPopup] = useState(false);
+
+  // — Report (Jan–Jun 2025) —
+  const [reportRange, setReportRange] = useState({
     startDate: '2025-01-01',
     endDate:   '2025-06-30'
-});
-const [reportData, setReportData] = useState([]);  
-const [reportLoading, setReportLoading] = useState(false);
-const [reportError, setReportError]     = useState('');
+  });
+  const [reportData, setReportData] = useState([]);  
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError]     = useState('');
 
   // Day‐name mapping
   const dayMap = {
@@ -59,15 +63,15 @@ const [reportError, setReportError]     = useState('');
     const mins = Math.floor(diff/60000), h = Math.floor(mins/60), m = mins%60;
     return `${h} hour${h!==1?'s':''} ${m} minute${m!==1?'s':''}`;
   };
-  const convertTo12Hour = (t) => {
+  const convertTo12Hour = t => {
     if (!t) return '';
-    let [h,m] = t.split(':').map(Number), period='AM';
-    if (h===0) h=12;
-    else if (h===12) period='PM';
-    else if (h>12) { h-=12; period='PM'; }
+    let [h,m] = t.split(':').map(Number), period = 'AM';
+    if (h === 0) h = 12;
+    else if (h === 12) period = 'PM';
+    else if (h > 12) { h -= 12; period = 'PM'; }
     return `${h}:${m.toString().padStart(2,'0')} ${period}`;
   };
-  const formatDate = (iso) => {
+  const formatDate = iso => {
     if (!iso) return '';
     const [y,mo,da] = iso.split('T')[0].split('-');
     return `${mo}/${da}/${y}`;
@@ -76,7 +80,7 @@ const [reportError, setReportError]     = useState('');
   // Fetch programs
   useEffect(() => {
     fetch('http://localhost:8000/programs')
-      .then(r=>r.json())
+      .then(r => r.json())
       .then(setClasses)
       .catch(console.error);
   }, []);
@@ -84,22 +88,22 @@ const [reportError, setReportError]     = useState('');
   // Fetch registrations
   useEffect(() => {
     fetch('http://localhost:8000/registrations')
-      .then(r=>r.json())
+      .then(r => r.json())
       .then(setAllRegistrations)
       .catch(console.error);
   }, []);
 
-  // Re-fetch programs when registrations change (to update counts)
+  // Re-fetch programs when registrations change
   useEffect(() => {
     fetch('http://localhost:8000/programs')
-      .then(r=>r.json())
+      .then(r => r.json())
       .then(setClasses)
       .catch(console.error);
   }, [allRegistrations]);
 
-  // Fetch registrations report whenever range changes
-useEffect(() => {
-  const fetchReport = async () => {
+  // Fetch registrations report when range changes
+  useEffect(() => {
+    const fetchReport = async () => {
       setReportLoading(true);
       setReportError('');
       try {
@@ -107,9 +111,8 @@ useEffect(() => {
         const res = await fetch(
           `http://localhost:8000/reports/registrations?start=${startDate}&end=${endDate}`
         );
-      if (!res.ok) throw new Error(`Status ${res.status}`);
-        const json = await res.json();
-        setReportData(json);
+        if (!res.ok) throw new Error(res.statusText);
+        setReportData(await res.json());
       } catch (err) {
         console.error(err);
         setReportError('Failed to load report.');
@@ -129,7 +132,7 @@ useEffect(() => {
         const id = classes[editIndex]._id;
         res = await fetch(`http://localhost:8000/programs/${id}`, {
           method: 'PUT',
-          headers: {'Content-Type':'application/json'},
+          headers: { 'Content-Type':'application/json' },
           body: JSON.stringify(formData)
         });
         if (!res.ok) throw new Error();
@@ -142,14 +145,15 @@ useEffect(() => {
         setEditIndex(null);
       } else {
         res = await fetch('http://localhost:8000/programs', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(formData)
+          method: 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify(formData)
         });
         if (!res.ok) throw new Error();
         data = await res.json();
         setClasses(cs => [...cs, data]);
       }
+      // reset form
       setFormData({
         programName:'', type:'', instructor:'',
         startDate:'', endDate:'',
@@ -159,7 +163,7 @@ useEffect(() => {
         nonMemberPrice:'', desc:'',
         enrolled:0, cancelled:false
       });
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       alert('Error saving program');
     }
@@ -171,9 +175,9 @@ useEffect(() => {
     setFormData({
       ...c,
       startDate: c.startDate.split('T')[0],
-      endDate: c.endDate.split('T')[0],
-      startTime: c.startTime||'',
-      endTime: c.endTime||'',
+      endDate:   c.endDate.split('T')[0],
+      startTime: c.startTime || '',
+      endTime:   c.endTime   || ''
     });
     setEditIndex(idx);
   };
@@ -185,9 +189,9 @@ useEffect(() => {
     });
     if (!res.ok) {
       const err = await res.json();
-      return alert(err.error||'Cancel failed');
+      return alert(err.error || 'Cancel failed');
     }
-    setClasses(cs => cs.map(c => c._id===id?{...c,cancelled:true}:c));
+    setClasses(cs => cs.map(c => c._id===id ? { ...c, cancelled: true } : c));
     alert('Class cancelled and notifications sent.');
   };
 
@@ -221,11 +225,21 @@ useEffect(() => {
   const deactivateMember = async () => {
     if (!searchResults.length) return;
     const userId = searchResults[0].memberId._id;
-    if (!window.confirm('Deactivate this member and cancel all their registrations?')) return;
-    const res = await fetch(`http://localhost:8000/users/${userId}`, { method: 'DELETE' });
+    if (!window.confirm('Deactivate this member and cancel their registrations?')) return;
+    const res = await fetch(`http://localhost:8000/users/${userId}`, { method:'DELETE' });
     if (!res.ok) return alert('Failed to deactivate');
     alert('Member deactivated and registrations cancelled.');
     setShowSearchPopup(false);
+  };
+
+  // Class search
+  const handleClassSearch = () => {
+    const q = classSearchQuery.toLowerCase().trim();
+    const matches = classes.filter(c =>
+      c.programName.toLowerCase().includes(q)
+    );
+    setFilteredClasses(matches);
+    setShowClassSearchPopup(true);
   };
 
   return (
@@ -253,6 +267,7 @@ useEffect(() => {
           </button>
         </div>
 
+        {/* Member Popup */}
         {showSearchPopup && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 md:w-1/2">
@@ -261,7 +276,6 @@ useEffect(() => {
                   ? `Member: ${searchResults[0].memberId.firstName} ${searchResults[0].memberId.lastName}`
                   : `No member found for “${memberSearchQuery}”`}
               </h2>
-
               {searchResults.length > 0 && (
                 <>
                   <ul className="space-y-2 max-h-64 overflow-y-auto mb-4">
@@ -283,7 +297,6 @@ useEffect(() => {
                   </button>
                 </>
               )}
-
               <button
                 onClick={() => setShowSearchPopup(false)}
                 className="block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
@@ -296,24 +309,18 @@ useEffect(() => {
 
         {/* 📊 Jan–Jun 2025 Registrations Report */}
         <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-semibold mb-4">
-            Registrations Report
-          </h2>
-
+          <h2 className="text-xl font-semibold mb-4">Registrations Report</h2>
           <ReportFilters
             startDate={reportRange.startDate}
             endDate={reportRange.endDate}
             onChange={setReportRange}
           />
-
           {reportLoading && <p>Loading report…</p>}
-          {reportError   && <p className="text-red-600">{reportError}</p>}
-
+          {reportError && <p className="text-red-600">{reportError}</p>}
           {!reportLoading && !reportError && (
             <RegistrationReportTable data={reportData} />
           )}
         </div>
-
 
         {/* ➕ Create / Edit Class */}
         <div className="bg-white p-6 rounded-lg shadow mb-6">
@@ -322,13 +329,19 @@ useEffect(() => {
           </h2>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <input
-              name="programName" placeholder="Class Name"
-              value={formData.programName} onChange={handleChange}
-              className="border p-2 rounded" required
+              name="programName"
+              placeholder="Class Name"
+              value={formData.programName}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
             />
             <select
-              name="type" value={formData.type} onChange={handleChange}
-              className="border p-2 rounded" required
+              name="type"
+              value={formData.type}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
             >
               <option value="">Select Class Type</option>
               <option>Yoga</option>
@@ -338,9 +351,12 @@ useEffect(() => {
               <option>Zumba</option>
             </select>
             <input
-              name="instructor" placeholder="Instructor Name"
-              value={formData.instructor} onChange={handleChange}
-              className="border p-2 rounded" required
+              name="instructor"
+              placeholder="Instructor Name"
+              value={formData.instructor}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
             />
 
             {/* Dates */}
@@ -405,31 +421,45 @@ useEffect(() => {
             )}
 
             <input
-              name="location" placeholder="Location"
-              value={formData.location} onChange={handleChange}
-              className="border p-2 rounded" required
+              name="location"
+              placeholder="Location"
+              value={formData.location}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
             />
             <input
               type="number"
-              name="capacity" placeholder="Capacity"
-              value={formData.capacity} onChange={handleChange}
-              className="border p-2 rounded" required
+              name="capacity"
+              placeholder="Capacity"
+              value={formData.capacity}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
             />
             <input
               type="number"
-              name="memberPrice" placeholder="Member Price"
-              value={formData.memberPrice} onChange={handleChange}
-              className="border p-2 rounded" required
+              name="memberPrice"
+              placeholder="Member Price"
+              value={formData.memberPrice}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
             />
             <input
               type="number"
-              name="nonMemberPrice" placeholder="Non-Member Price"
-              value={formData.nonMemberPrice} onChange={handleChange}
-              className="border p-2 rounded" required
+              name="nonMemberPrice"
+              placeholder="Non-Member Price"
+              value={formData.nonMemberPrice}
+              onChange={handleChange}
+              className="border p-2 rounded"
+              required
             />
             <textarea
-              name="desc" placeholder="Description"
-              value={formData.desc} onChange={handleChange}
+              name="desc"
+              placeholder="Description"
+              value={formData.desc}
+              onChange={handleChange}
               className="border p-2 rounded"
             />
 
@@ -459,6 +489,55 @@ useEffect(() => {
             </button>
           </form>
         </div>
+
+        {/* 🔍 Class Search */}
+        <div className="my-6 flex gap-2">
+          <input
+            type="text"
+            placeholder="Search classes by name…"
+            value={classSearchQuery}
+            onChange={e => setClassSearchQuery(e.target.value)}
+            className="flex-1 border p-2 rounded"
+          />
+          <button
+            onClick={handleClassSearch}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Search Classes
+          </button>
+        </div>
+
+        {/* Class Search Popup */}
+        {showClassSearchPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 md:w-1/2">
+              <h2 className="text-xl font-semibold mb-4">
+                {filteredClasses.length
+                  ? `Classes matching “${classSearchQuery}”`
+                  : `No classes found for “${classSearchQuery}”`}
+              </h2>
+              {filteredClasses.length > 0 && (
+                <ul className="space-y-2 max-h-64 overflow-y-auto mb-4">
+                  {filteredClasses.map(c => (
+                    <li key={c._id} className="border p-2 rounded">
+                      <p className="font-semibold">{c.programName} ({c.type})</p>
+                      <p className="text-sm text-gray-600">
+                        {formatDate(c.startDate)} – {formatDate(c.endDate)}<br/>
+                        {convertTo12Hour(c.startTime)} – {convertTo12Hour(c.endTime)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button
+                onClick={() => setShowClassSearchPopup(false)}
+                className="block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* 📋 Current Classes */}
         <div className="bg-white p-6 rounded-lg shadow">

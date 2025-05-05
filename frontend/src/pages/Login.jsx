@@ -49,9 +49,10 @@ const Login = () => {
       localStorage.setItem('lastName', data.lastName);
       localStorage.setItem('email', data.email);
       localStorage.setItem('phone', data.phone);
+      localStorage.setItem('role', data.role);
 
       // Navigate based on user role
-      if (data.username === 'staff') {
+      if (data.role === 'staff') {
         navigate('/staffHome');
       } else {
         navigate('/');
