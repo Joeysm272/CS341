@@ -1,3 +1,5 @@
+/* Authored by Macy Bindl */
+
 import React from 'react';
 import Navbar from '../components/Navbar';
 import membershipImage from '../images/membership.jpg.webp';
@@ -49,6 +51,13 @@ const Home = () => {
           <img src={programsImage} alt="Programs Image" />
           <span class="home-label">Programs</span>
         </button>
+      </div>
+
+      {/* PDF link at the bottom */}
+      <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '20px' }}>
+      <a href="/UserManual.pdf" target="_blank" rel="noopener noreferrer">
+        View Our User Manual
+      </a>
       </div>
     </div>
   );
