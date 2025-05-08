@@ -229,25 +229,46 @@ app.patch("/users/:id", async (req, res) => {
   }
 });
 
-// ---- DELETE /users/:id (deactivate user + delete their registrations) ----
+// DELETE /users/:id (deactivate user + delete their registrations + decrement enrolled counts)
 app.delete('/users/:id', async (req, res) => {
   try {
     const userId = req.params.id;
 
+    //Mark the user inactive
     const user = await User.findByIdAndUpdate(
       userId,
       { active: false },
       { new: true }
     );
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    //Load all of their registrations
+    const registrations = await Registration.find({ memberId: userId });
+
+    //Decrement enrolled count for each program
+    await Promise.all(
+      registrations.map(reg =>
+        Program.findByIdAndUpdate(
+          reg.programId,
+          { $inc: { enrolled: -1 } }
+        )
+      )
+    );
+
+    //Delete their registrations
     await Registration.deleteMany({ memberId: userId });
 
-    res.json({ message: 'User deactivated and registrations deleted.' });
+    return res.json({
+      message: 'User deactivated, registrations removed, and enrolled counts decremented.'
+    });
   } catch (err) {
     console.error("Error deactivating user:", err);
-    res.status(500).json({ error: 'Failed to deactivate user' });
+    return res.status(500).json({ error: 'Failed to deactivate user' });
   }
 });
+
 
 
 
@@ -258,7 +279,7 @@ app.get("/registrations", async (req, res) => {
   try {
     const registrations = await Registration.find()
       .populate("memberId", "firstName lastName email")
-      .populate("programId", "programName type startDate endDate startTime endTime location cancelled");
+      .populate("programId", "programName type startDate endDate startTime endTime location instructor availableDays cancelled");
     res.json(registrations);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch registrations" });

@@ -269,55 +269,71 @@ const StaffHome = () => {
 
         {/* Member Popup */}
         {showSearchPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 md:w-1/2">
-            <h2 className="text-xl font-semibold mb-4">
-              {searchResults.length
-                ? `Member: ${searchResults[0].memberId.firstName} ${searchResults[0].memberId.lastName}`
-                : `No member found for “${memberSearchQuery}”`}
-            </h2>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 md:w-1/2">
+              <h2 className="text-xl font-semibold mb-4">
+                {searchResults.length
+                  ? `Member: ${searchResults[0].memberId.firstName} ${searchResults[0].memberId.lastName}`
+                  : `No member found for “${memberSearchQuery}”`}
+              </h2>
 
-            {searchResults.length > 0 && (
-              <>
-                <ul className="space-y-2 max-h-64 overflow-y-auto mb-4">
-                  {searchResults.map(reg => (
-                    <li key={reg._id} className="border p-3 rounded">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold">{reg.programId.programName}</span>
-                        {reg.programId.cancelled && (
-                          <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs">
-                            Cancelled
+              {searchResults.length > 0 && (
+                <>
+                  <ul className="space-y-2 max-h-64 overflow-y-auto mb-4">
+                    {searchResults.map(reg => (
+                      <li key={reg._id} className="border p-3 rounded">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold">
+                            {reg.programId.programName} ({reg.programId.type})
                           </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {formatDate(reg.programId.startDate)} – {formatDate(reg.programId.endDate)}
-                        <br />
-                        {convertTo12Hour(reg.programId.startTime)} – {convertTo12Hour(reg.programId.endTime)}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={deactivateMember}
-                  className="mb-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                >
-                  Deactivate Member
-                </button>
-              </>
-            )}
+                          {reg.programId.cancelled && (
+                            <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs">
+                              Cancelled
+                            </span>
+                          )}
+                        </div>
 
-            <button
-              onClick={() => setShowSearchPopup(false)}
-              className="block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            >
-              Close
-            </button>
+                        {/* instructor */}
+                        <p className="text-sm text-gray-600 mt-1">
+                          Instructor: {reg.programId.instructor || 'N/A'}
+                        </p>
+
+                        {/* date / time */}
+                        <p className="text-sm text-gray-600 mt-1">
+                          {formatDate(reg.programId.startDate)} – {formatDate(reg.programId.endDate)}<br/>
+                          {convertTo12Hour(reg.programId.startTime)} – {convertTo12Hour(reg.programId.endTime)}
+                        </p>
+
+                        {/* days of week */}
+                        <p className="text-sm text-gray-600">
+                          Days:{' '}
+                          {(reg.programId.availableDays || [])
+                            .map(d => dayMap[d] || d)
+                            .join(', ') || 'N/A'}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button
+                    onClick={deactivateMember}
+                    className="mb-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  >
+                    Deactivate Member
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={() => setShowSearchPopup(false)}
+                className="block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Close
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-
-
+        )}
+        
         {/*  Class Search */}
         <div className="my-6 flex gap-2">
           <input
@@ -357,8 +373,14 @@ const StaffHome = () => {
                         )}
                       </p>
                       <p className="text-sm text-gray-600">
+                        {c.instructor}
+                      </p>
+                      <p className="text-sm text-gray-600">
                         {formatDate(c.startDate)} – {formatDate(c.endDate)}<br/>
                         {convertTo12Hour(c.startTime)} – {convertTo12Hour(c.endTime)}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {c.availableDays.map(d => dayMap[d] || d).join(', ')}
                       </p>
                     </li>
                   ))}
@@ -373,6 +395,7 @@ const StaffHome = () => {
             </div>
           </div>
         )}
+
 
         {/* Registrations Report */}
         <div className="bg-white p-6 rounded-lg shadow mb-6">
