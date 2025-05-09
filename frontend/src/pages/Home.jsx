@@ -1,7 +1,9 @@
+
 //This is the home page for the YMCA website. It includes a banner with a header and images, as well as buttons to navigate to the membership and programs pages. 
 // The page is styled using CSS and includes a navbar component.
 // The images used in the banner and buttons are imported from local files.
 //Authors: Joey Smith, Macy Bindl
+
 
 import React from 'react';
 import Navbar from '../components/Navbar';
@@ -53,6 +55,13 @@ const Home = () => {
           <img src={programsImage} alt="Programs Image" />
           <span class="home-label">Programs</span>
         </button>
+      </div>
+
+      {/* PDF link at the bottom */}
+      <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '20px' }}>
+      <a href="/UserManual.pdf" target="_blank" rel="noopener noreferrer">
+        View Our User Manual
+      </a>
       </div>
     </div>
   );
