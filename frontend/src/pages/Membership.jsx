@@ -1,3 +1,7 @@
+//This is the membership page for the user. It displays the user's account information and family members. 
+// It also allows the user to add family members to their account.
+// The user can view their membership dashboard from this page as well.
+//Authors: Joey Smith, Macy Bindl, Preston Piranio
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';

@@ -1,3 +1,7 @@
+//Program model for the database
+// This file defines the schema for programs in the database using Mongoose.
+// It includes fields for program name, type, instructor, dates, times, available days, location, capacity, prices, description, enrolled count, and cancellation status.
+//Author: Joey Smith
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 

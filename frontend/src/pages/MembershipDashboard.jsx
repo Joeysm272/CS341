@@ -1,3 +1,6 @@
+//This is the membership dashboard page for the user. It displays the user's account information and registered classes.
+//It also allows the user to view their notifications and registered classes.
+//Authors: Joey Smith, Macy Bindl, Preston Piranio
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 

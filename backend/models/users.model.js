@@ -1,3 +1,7 @@
+//Users model
+// This file defines the schema for users in the database using Mongoose.
+// It includes fields for first name, last name, username, password, email, phone number, role, family members, and active status.
+//Author: Joey Smith
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -29,7 +33,7 @@ const userSchema = new Schema({
         // required: true
     },
     phone: {type: String,
-            match: [/^\+?[0-9\- ]+$/, "Invalid phone number format"]
+            match: [/^\+?[0-9\- ]+$/, "Invalid phone number format"] //Ensures phone number is valid
     },
     role: {
         type: String,

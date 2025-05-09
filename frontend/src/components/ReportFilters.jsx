@@ -1,4 +1,7 @@
-// src/components/ReportFilters.jsx
+//This component creates a date range filter for reports
+// It allows the user to select a start and end date for the report
+// The selected dates are passed to a parent component via the onChange callback function
+//Authors: Preston Piranio
 import React from 'react';
 
 export default function ReportFilters({ startDate, endDate, onChange }) {

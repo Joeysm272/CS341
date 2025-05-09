@@ -1,3 +1,6 @@
+//this is a React component for a Sign Up page
+// It includes a form for users to enter their first name, last name, username, password, email, and phone number
+//Author: Joey Smith
 import React, {useState} from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
@@ -61,6 +64,7 @@ const SignUp = () => {
         phone: phone
       })
     });
+
 
     const data = await response.json();
     if(data){

@@ -1,3 +1,9 @@
+//Endpoints for the backend server
+// This file contains the endpoints for the backend server, including user authentication, program management, and registration handling.
+// It uses Express.js for routing and Mongoose for database interactions.
+//Authors: Joey Smith, Macy Bindl, Preston Piranio
+
+// Import required modules
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -23,12 +29,6 @@ mongoose.connect(config.connectionString, {
 })
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
-
-/* Uncomment when building project */
-// app.use(express.static(path.join(__dirname, '../frontend/dist')));
-// app.get('*', (req, res) => {
-//    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
-// });
 
 app.get("/", (req, res) => {
   res.json({ message: "hello" });
@@ -137,7 +137,7 @@ app.delete("/programs/:id", async (req, res) => {
 
 // Sign-up
 
-const saltRounds = 10; // cost factor, adjust this value as needed
+const saltRounds = 10; // cost factor, adjust this value as needed( For password hashing)
 
 app.post("/sign-up", async (req, res) => {
   try {
@@ -404,6 +404,7 @@ app.put('/programs/:id/cancel', async (req, res) => {
   }
 });
 
+// GET notifications for a specific user
 app.get('/notifications/:userId', async (req, res) => {
   try {
     const { userId } = req.params;

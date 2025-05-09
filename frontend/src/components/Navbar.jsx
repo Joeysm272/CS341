@@ -1,3 +1,9 @@
+//Navbar component for the application
+//This component is responsible for rendering the navigation bar at the top of the page
+//It includes the logo, home button, and login/logout functionality based on user authentication status
+//It akso conditionally renders a staff portal button for users with the 'staff' role
+//Authors: Joey Smith, Macy Bindl, Preston Piranio
+
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '../images/Ylogo.webp'
@@ -5,10 +11,11 @@ import logo from '../images/Ylogo.webp'
 const Navbar = () => {
   const navigate = useNavigate()
 
+  // Get user information from local storage
   const userId   = localStorage.getItem('userId')
   const username = localStorage.getItem('username')
   const role     = localStorage.getItem('role')
-
+ 
   return (
     <div className='bg-white flex items-center justify-between px-6 py-2 drop-shadow'>
       <button

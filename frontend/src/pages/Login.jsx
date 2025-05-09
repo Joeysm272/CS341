@@ -1,3 +1,7 @@
+//This is the login page for the application. It allows users to log in using their username and password. If the login is successful, it 
+// redirects them to the appropriate page based on their role (staff or member). If there is an error, it displays an error message.
+//Author: Joey Smith
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -18,7 +22,7 @@ const Login = () => {
     }
 
     if (!password) {
-      setError('Please enter a password');
+      setError('Please enter password');
       return;
     }
 

@@ -1,3 +1,7 @@
+//This is the programs page of the frontend application
+// It displays a list of available programs and allows users to register for them.
+// It also fetches the user's registrations and displays them accordingly.
+//Authors: Joey Smith, Macy Bindl, Preston Piranio
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 

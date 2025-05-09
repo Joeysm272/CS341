@@ -1,3 +1,6 @@
+//This is the staff home page for the YMCA Staff Portal. It includes a navbar, a report filters component, and a registration report table. 
+// The page allows staff to create and edit classes, search for members, and view current classes and their participants.
+//Author: Joey Smith, Macy Bindl, Preston Piranio
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import ReportFilters from '../components/ReportFilters';
@@ -38,7 +41,7 @@ const StaffHome = () => {
   const [filteredClasses, setFilteredClasses] = useState([]);
   const [showClassSearchPopup, setShowClassSearchPopup] = useState(false);
 
-  // — Report (Jan–Jun 2025) —
+  // — Report Default is Jan–Jun 2025 —
   const [reportRange, setReportRange] = useState({
     startDate: '2025-01-01',
     endDate:   '2025-06-30'
@@ -54,6 +57,7 @@ const StaffHome = () => {
   };
 
   // Helpers
+  //Computes the duration between two times in "HH:mm" format and returns it as a string.
   const computeDuration = (start, end) => {
     if (!start || !end) return '';
     const [sH, sM] = start.split(':').map(Number);
@@ -63,6 +67,7 @@ const StaffHome = () => {
     const mins = Math.floor(diff/60000), h = Math.floor(mins/60), m = mins%60;
     return `${h} hour${h!==1?'s':''} ${m} minute${m!==1?'s':''}`;
   };
+  //converts a 24-hour time string to a 12-hour format with AM/PM.
   const convertTo12Hour = t => {
     if (!t) return '';
     let [h,m] = t.split(':').map(Number), period = 'AM';
@@ -71,6 +76,7 @@ const StaffHome = () => {
     else if (h > 12) { h -= 12; period = 'PM'; }
     return `${h}:${m.toString().padStart(2,'0')} ${period}`;
   };
+  //formats a date string in ISO format (YYYY-MM-DD) to MM/DD/YYYY format.
   const formatDate = iso => {
     if (!iso) return '';
     const [y,mo,da] = iso.split('T')[0].split('-');
@@ -250,7 +256,7 @@ const StaffHome = () => {
           YMCA Staff Portal
         </header>
 
-        {/* 🔍 Unified Member Search & Deactivate */}
+        {/* Unified Member Search & Deactivate */}
         <div className="my-6 flex gap-2">
           <input
             type="text"
@@ -579,8 +585,6 @@ const StaffHome = () => {
             </button>
           </form>
         </div>
-
-        {/*  Class Search Popup is above */}
 
         {/*  Current Classes */}
         <div className="bg-white p-6 rounded-lg shadow">

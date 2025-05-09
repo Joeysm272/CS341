@@ -1,3 +1,7 @@
+//This component allows the user to select multiple days of the week for a class recurrence.
+// It uses checkboxes to let the user select the days, and it validates that at least one day is selected before submission.
+// The selected days are passed to a parent component via the onDaysSubmit callback function.
+//Authors: Preston Piranio
 import React, { useState } from 'react';
 
 const allowedDays = [
@@ -36,6 +40,7 @@ const RecurrenceDaysForm = ({ onDaysSubmit }) => {
     onDaysSubmit(selectedDays);
   };
 
+  // Render the form with checkboxes for each allowed day
   return (
     <form onSubmit={handleSubmit} className="p-4 border rounded my-4">
       <label className="block font-medium mb-2">Select the Days the Class Occurs</label>

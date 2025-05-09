@@ -1,3 +1,6 @@
+//This is the application entry point for the React frontend of the system.
+// It sets up the routing for the application using React Router and imports various pages and components.
+//Authors: Joey Smith, Macy Bindl, Preston Piranio
 import React from 'react';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import './index.css';

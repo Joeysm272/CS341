@@ -1,4 +1,8 @@
-// src/components/RegistrationReportTable.jsx
+//This component organizes and displays a table of registration data for a specific date range
+// It takes in a prop called data, which is an array of registration objects
+// Each registration object contains information about the member, program, and registration date
+// The component formats the registration date and class dates for display in the table
+//Authors: Preston Piranio
 import React from 'react';
 
 export default function RegistrationReportTable({ data }) {
